@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,8 +6,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Link, useLocation } from 'react-router-dom';
 
 function CustomBreadcrumb() {
   const location = useLocation();
@@ -44,7 +42,7 @@ function CustomBreadcrumb() {
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
           <Link to="/dashboard" className="cursor-pointer">
-            {t('breadcrumbTitle')}
+            {t('Dashboard')}
           </Link>
         </BreadcrumbItem>
         {breadcrumbItems.length > 0 && <BreadcrumbSeparator />}
