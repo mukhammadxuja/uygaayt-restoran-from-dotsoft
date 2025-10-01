@@ -15,6 +15,8 @@ import Signin from './Signin';
 import Signup from './Signup';
 
 function Dashboard() {
+  // yarn vite --host 127.0.0.1 --port 3000
+
   return (
     <Router>
       <Routes>

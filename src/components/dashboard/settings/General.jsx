@@ -1,22 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { useAppContext } from '@/context/AppContext';
 import { auth, db, storage } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import {
-  SelectContent,
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
   const { userData, setUserData } = useAppContext();
@@ -24,10 +16,7 @@ function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
 
   const defaultValues = {
     displayName: userData?.displayName || '',
-    profession: userData?.profession || '',
     location: userData?.location || '',
-    pronoun: userData?.pronoun || '',
-    isOpenToWork: userData?.isOpenToWork || false,
   };
 
   const {
@@ -42,10 +31,7 @@ function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
   useEffect(() => {
     reset({
       displayName: userData?.displayName || '',
-      profession: userData?.profession || '',
       location: userData?.location || '',
-      pronoun: userData?.pronoun || '',
-      isOpenToWork: userData?.isOpenToWork || false,
     });
   }, [userData, reset]);
 
@@ -70,10 +56,7 @@ function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
 
       const updatedData = {
         displayName: data.displayName,
-        profession: data.profession,
         location: data.location,
-        pronoun: data.pronoun,
-        isOpenToWork: data.isOpenToWork,
         photoURL,
       };
 
@@ -116,17 +99,6 @@ function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
       </div>
 
       <div className="flex flex-col items-start space-y-2">
-        <Label required>{t('profession')}</Label>
-        <Input
-          disabled={isSubmitting}
-          {...register('profession', { required: 'Profession is required' })}
-          placeholder={t('frontendDeveloper')}
-          onChange={() => setIsFormChanged(true)}
-        />
-        {errors.profession && <p>{errors.profession.message}</p>}
-      </div>
-
-      <div className="flex flex-col items-start space-y-2">
         <Label optional>{t('location')}</Label>
         <Input
           disabled={isSubmitting}
@@ -136,55 +108,7 @@ function General({ photo, isFormChanged, setIsFormChanged, setImageSelected }) {
         />
       </div>
 
-      <div className="space-y-1 w-full">
-        <Label optional htmlFor="pronoun">
-          {t('pronoun')}
-        </Label>
-        <Controller
-          name="pronoun"
-          control={control}
-          render={({ field }) => (
-            <Select
-              disabled={isSubmitting}
-              onValueChange={(value) => {
-                field.onChange(value);
-                setIsFormChanged(true);
-              }}
-              value={field.value}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Pronoun" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="He/Him">{t('heHim')}</SelectItem>
-                <SelectItem value="She/Her">{t('sheHer')}</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-        <p className="text-xs text-red-500">{errors.pronoun?.message}</p>
-      </div>
-
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Controller
-            name="isOpenToWork"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Switch
-                disabled={isSubmitting}
-                checked={value}
-                onCheckedChange={() => {
-                  onChange(!value);
-                  setIsFormChanged(true);
-                }}
-                id="isOpenToWork"
-              />
-            )}
-          />
-          <Label htmlFor="isOpenToWork">{t('openToWork')}</Label>
-        </div>
-
         <div className="flex items-center gap-2">
           <Button type="button" variant="secondary" onClick={handleCancel}>
             {t('cancel')}

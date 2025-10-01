@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { Pencil, Trash } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
+import { Pencil, Trash } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 function ProfileHeader({
   imageSrc,
@@ -81,12 +81,11 @@ function ProfileHeader({
         </div>
         <div>
           <p className="text-xs text-muted-foreground">
-            {userData?.isOpenToWork ? '#OpenToWork' : '#NotOpenToWork'}
+            08:00 - 00:00
           </p>
           <span className="flex items-center gap-1.5">
             <h3 className="text-lg font-medium">
               {userData?.displayName ? userData.displayName : 'John Doe'}
-              {userData?.pronoun && `, ${userData.pronoun}`}
             </h3>
             <svg
               title="Verified"
@@ -103,8 +102,7 @@ function ProfileHeader({
             </svg>
           </span>
           <p className="text-sm">
-            {userData?.profession ? userData.profession : 'Frontend Developer'}
-            {userData?.location && ` in ${userData.location}`}
+            {userData?.location ? ` in ${userData.location}` : 'Jizzakh, Uzbekistan'}
           </p>
         </div>
       </div>
