@@ -135,7 +135,11 @@ export default function CreateOrder({ onSubmit }) {
                 control={control}
                 rules={{ required: 'Sana majburiy' }}
                 render={({ field }) => (
-                  <DatePicker value={field.value} onChange={field.onChange} className="w-full" />
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="w-full"
+                  />
                 )}
               />
               {errors.sana && (
@@ -365,7 +369,6 @@ export default function CreateOrder({ onSubmit }) {
 
         {/* Price */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground">Narx</h3>
           <div className="space-y-2">
             <Label htmlFor="narx">Narx (so'm)</Label>
             <Input
