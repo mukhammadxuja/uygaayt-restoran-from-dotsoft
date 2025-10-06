@@ -15,6 +15,8 @@ import NotFound from './NotFound';
 import Orders from './Orders';
 import Signin from './Signin';
 import Signup from './Signup';
+import Services from './Services';
+import OrderTemplate from './OrderTemplate';
 
 function Dashboard() {
   // yarn vite --host 127.0.0.1 --port 3000
@@ -47,6 +49,8 @@ function Dashboard() {
           <Route path="create-order" element={<CreateOrder />} />
           <Route path="orders" element={<Orders />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="services" element={<Services />} />
+          <Route path="order-template" element={<OrderTemplate />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

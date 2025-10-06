@@ -53,6 +53,7 @@ export const AppContextProvider = ({ children }) => {
     userData,
     setUserData,
     loading,
+    userUid,
   };
 
   return (
