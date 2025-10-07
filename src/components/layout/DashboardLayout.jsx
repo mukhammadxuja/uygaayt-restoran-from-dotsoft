@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '../sidebar/AppSidebar';
 import CustomBreadcrumb from '../CustomBreadcrumb';
 import { useFont } from '@/context/FontContext';
+import { useAppContext } from '@/context/AppContext';
 
 const data = {
   user: {
@@ -155,6 +156,17 @@ const data = {
 
 function DashboardLayout() {
   const { font } = useFont();
+  const { clients } = useAppContext();
+  const location = useLocation();
+  const { clientId } = useParams();
+
+  // Check if we're on client details page
+  const isClientDetailsPage =
+    location.pathname.includes('/clients/') && clientId;
+  const client = isClientDetailsPage
+    ? clients.find((c) => c.id === clientId)
+    : null;
+  const showBackButton = isClientDetailsPage;
 
   return (
     <div style={{ fontFamily: font }}>
@@ -165,7 +177,10 @@ function DashboardLayout() {
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1 w-5 h-5" />
               <Separator orientation="vertical" className="mr-2 h-4" />
-              <CustomBreadcrumb />
+              <CustomBreadcrumb
+                clientName={client?.name}
+                showBackButton={showBackButton}
+              />
             </div>
           </header>
 

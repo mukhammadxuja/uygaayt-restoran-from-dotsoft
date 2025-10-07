@@ -15,6 +15,10 @@ import NotFound from './NotFound';
 import Orders from './Orders';
 import Signin from './Signin';
 import Signup from './Signup';
+import Clients from './Clients';
+import ClientDetails from './ClientDetails';
+import Employees from './Employees';
+import EmployeeDetails from './EmployeeDetails';
 
 function Dashboard() {
   // yarn vite --host 127.0.0.1 --port 3000
@@ -46,6 +50,10 @@ function Dashboard() {
           <Route index element={<MainPage />} />
           <Route path="create-order" element={<CreateOrder />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="clients" element={<Clients />} />
+          <Route path="clients/:clientId" element={<ClientDetails />} />
+          <Route path="employees" element={<Employees />} />
+          <Route path="employees/:employeeId" element={<EmployeeDetails />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
 

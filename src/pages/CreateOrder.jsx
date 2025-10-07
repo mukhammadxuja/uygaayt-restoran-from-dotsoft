@@ -6,14 +6,29 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Controller, useForm } from 'react-hook-form';
+import { useAppContext } from '@/context/AppContext';
+import { useEffect, useState } from 'react';
 
 export default function CreateOrder({ onSubmit }) {
+  const { clients, addOrder } = useAppContext();
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [isNewClient, setIsNewClient] = useState(false);
+
   const {
     register,
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -24,6 +39,7 @@ export default function CreateOrder({ onSubmit }) {
       kameraSoni: 1,
       telefon: '',
       mijozIsmi: '',
+      clientId: '',
       options: {
         nikoh: false,
         fotosessiya: false,
@@ -56,14 +72,99 @@ export default function CreateOrder({ onSubmit }) {
     },
   });
 
-  const onFormSubmit = (data) => {
-    console.log(data);
-    reset();
+  const onFormSubmit = async (data) => {
+    try {
+      const orderData = {
+        ...data,
+        clientId: selectedClientId || null,
+        clientName: data.mijozIsmi,
+        clientPhone: data.telefon,
+      };
+
+      await addOrder(orderData);
+      reset();
+      setSelectedClientId('');
+      setIsNewClient(false);
+
+      if (onSubmit) {
+        onSubmit(orderData);
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+    }
   };
 
   return (
     <div className="my-4">
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+        {/* Client Selection */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">
+            Mijoz tanlash
+          </h3>
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant={!isNewClient ? 'default' : 'outline'}
+                onClick={() => {
+                  setIsNewClient(false);
+                  setSelectedClientId('');
+                }}
+              >
+                Mavjud mijoz
+              </Button>
+              <Button
+                type="button"
+                variant={isNewClient ? 'default' : 'outline'}
+                onClick={() => {
+                  setIsNewClient(true);
+                  setSelectedClientId('');
+                }}
+              >
+                Yangi mijoz
+              </Button>
+            </div>
+
+            {!isNewClient && (
+              <div className="space-y-2">
+                <Label htmlFor="clientSelect">Mijozni tanlang</Label>
+                <Controller
+                  name="clientId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={selectedClientId}
+                      onValueChange={(value) => {
+                        setSelectedClientId(value);
+                        field.onChange(value);
+                        const selectedClient = clients.find(
+                          (c) => c.id === value
+                        );
+                        if (selectedClient) {
+                          setValue('mijozIsmi', selectedClient.name);
+                          setValue('telefon', selectedClient.phone);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Mijozni tanlang" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name} - {client.phone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">
@@ -78,6 +179,7 @@ export default function CreateOrder({ onSubmit }) {
                   required: 'Mijoz ismi majburiy',
                 })}
                 placeholder="Mijoz ismini kiriting"
+                disabled={!isNewClient && selectedClientId}
               />
               {errors.mijozIsmi && (
                 <p className="text-sm text-red-500">
@@ -94,6 +196,7 @@ export default function CreateOrder({ onSubmit }) {
                   required: 'Telefon raqami majburiy',
                 })}
                 placeholder="+998 90 123 45 67"
+                disabled={!isNewClient && selectedClientId}
               />
               {errors.telefon && (
                 <p className="text-sm text-red-500">{errors.telefon.message}</p>

@@ -68,5 +68,10 @@
   "collectedDataDescription": "Option to export/download all user data in a structured format.",
   "clearAllData": "Clear all data",
   "deleteAccount": "Delete Account",
-  "deleteAccountDescription": "Option to delete the account and all associated data permanently."
+  "deleteAccountDescription": "Option to delete the account and all associated data permanently.",
+  "Dashboard": "Dashboard",
+  "Mijozlar": "Clients",
+  "Xodimlar": "Employees",
+  "Buyurtmalar": "Orders",
+  "Sozlamalar": "Settings"
 }

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAppContext } from '@/context/AppContext';
 import {
   Calendar,
   Camera,
@@ -18,128 +19,7 @@ import {
 import { useState } from 'react';
 
 export default function Orders() {
-  const [orders, setOrders] = useState([
-    {
-      id: '1',
-      toyxona: 'Samarkand Palace',
-      nikoh: 'Oila Saroyi',
-      bazm: 'Grand Hall',
-      sana: '2025-03-15',
-      kameraSoni: 3,
-      telefon: '+998901234567',
-      mijozIsmi: 'Aziz Rahimov',
-      options: {
-        nikoh: true,
-        fotosessiya: true,
-        bazm: true,
-        chimilidq: false,
-        elOshi: false,
-        fotixaTuy: false,
-        kelinSalom: true,
-        qizBazm: false,
-        loveStory: true,
-      },
-      albom: 'A4',
-      fleshka: true,
-      pramoyEfir: false,
-      operatorlar: {
-        opr1: 'Sardor',
-        opr2: 'Javohir',
-        ronin: 'Bobur',
-        kran: '',
-        camera360: '',
-      },
-      qoshimcha: {
-        foto: 'Premium paket',
-        nahor: '',
-        kelinSalom: 'Maxsus',
-        pramoyEfir: '',
-        montaj: 'Standart',
-      },
-      narx: 15000000,
-      status: 'Qabul qilindi',
-    },
-    {
-      id: '2',
-      toyxona: 'Tashkent Grand',
-      nikoh: 'Oqsaroy',
-      bazm: 'VIP Zal',
-      sana: '2025-03-20',
-      kameraSoni: 4,
-      telefon: '+998907654321',
-      mijozIsmi: 'Dilshod Karimov',
-      options: {
-        nikoh: true,
-        fotosessiya: true,
-        bazm: true,
-        chimilidq: true,
-        elOshi: true,
-        fotixaTuy: false,
-        kelinSalom: true,
-        qizBazm: true,
-        loveStory: true,
-      },
-      albom: '30x30',
-      fleshka: true,
-      pramoyEfir: true,
-      operatorlar: {
-        opr1: 'Sardor',
-        opr2: 'Javohir',
-        ronin: 'Bobur',
-        kran: 'Anvar',
-        camera360: 'Rustam',
-      },
-      qoshimcha: {
-        foto: 'VIP paket',
-        nahor: 'Bor',
-        kelinSalom: 'Premium',
-        pramoyEfir: 'YouTube',
-        montaj: 'Premium',
-      },
-      narx: 25000000,
-      status: "To'y boshlandi",
-    },
-    {
-      id: '3',
-      toyxona: 'Bukhara Hall',
-      nikoh: 'Madina',
-      bazm: 'Klassik Zal',
-      sana: '2025-02-28',
-      kameraSoni: 2,
-      telefon: '+998909876543',
-      mijozIsmi: 'Shohruh Aliyev',
-      options: {
-        nikoh: true,
-        fotosessiya: true,
-        bazm: false,
-        chimilidq: false,
-        elOshi: false,
-        fotixaTuy: false,
-        kelinSalom: false,
-        qizBazm: false,
-        loveStory: true,
-      },
-      albom: 'A3',
-      fleshka: true,
-      pramoyEfir: false,
-      operatorlar: {
-        opr1: 'Javohir',
-        opr2: '',
-        ronin: '',
-        kran: '',
-        camera360: '',
-      },
-      qoshimcha: {
-        foto: 'Standart',
-        nahor: '',
-        kelinSalom: '',
-        pramoyEfir: '',
-        montaj: 'Standart',
-      },
-      narx: 8000000,
-      status: 'Video editga berildi',
-    },
-  ]);
+  const { orders } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -148,12 +28,20 @@ export default function Orders() {
   const filteredOrders = orders.filter((order) => {
     const search = debouncedSearch.toLowerCase();
     return (
-      order.toyxona.toLowerCase().includes(search) ||
-      order.mijozIsmi.toLowerCase().includes(search) ||
-      order.telefon.includes(search) ||
-      order.status.toLowerCase().includes(search)
+      (order.toyxona && order.toyxona.toLowerCase().includes(search)) ||
+      (order.mijozIsmi && order.mijozIsmi.toLowerCase().includes(search)) ||
+      (order.telefon && order.telefon.includes(search)) ||
+      (order.clientName && order.clientName.toLowerCase().includes(search)) ||
+      (order.clientPhone && order.clientPhone.includes(search))
     );
   });
+
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    return new Date(
+      date.seconds ? date.seconds * 1000 : date
+    ).toLocaleDateString('uz-UZ');
+  };
 
   const handleCardClick = (order) => {
     setSelectedOrder(order);
@@ -218,19 +106,23 @@ export default function Orders() {
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Mijoz:</span>
-                <span className="ml-auto font-medium">{order.mijozIsmi}</span>
+                <span className="ml-auto font-medium">
+                  {order.mijozIsmi || order.clientName || 'N/A'}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Sana:</span>
                 <span className="ml-auto font-medium">
-                  {new Date(order.sana).toLocaleDateString('uz-UZ')}
+                  {formatDate(order.sana)}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Telefon:</span>
-                <span className="ml-auto font-medium">{order.telefon}</span>
+                <span className="ml-auto font-medium">
+                  {order.telefon || order.clientPhone || 'N/A'}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Camera className="h-4 w-4 text-muted-foreground" />
@@ -252,7 +144,7 @@ export default function Orders() {
                 <DollarSign className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">Narx:</span>
                 <span className="ml-auto text-lg font-bold text-primary">
-                  {order.narx.toLocaleString('uz-UZ')} so'm
+                  {(order.narx || 0).toLocaleString('uz-UZ')} so'm
                 </span>
               </div>
             </CardContent>
