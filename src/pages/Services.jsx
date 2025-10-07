@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,9 +26,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Edit, Trash2, Search, Package, Loader2 } from 'lucide-react';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
+  CircleOff,
+  Tag,
+  Loader2,
+} from 'lucide-react';
 import { useServices } from '@/hooks/use-services';
 import { toast } from 'sonner';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
+import CustomPagination from '@/components/ui/custom-pagination';
 
 function Services() {
   const { services, loading, error, addService, updateService, deleteService } =
@@ -138,17 +163,21 @@ function Services() {
   }
 
   return (
-    <div className="space-y-6 my-4">
+    <div className="space-y-4 my-2">
       {/* Header with Add Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Xizmatlar</h1>
-          <p className="text-muted-foreground">Barcha xizmatlarni boshqaring</p>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Xizmatlar ro'yxati
+          </h2>
+          <p className="text-muted-foreground">
+            Tizimga yangi xizmat qo'shish uchun "Xizmat qo'shish" tugmasini
+            bosing.
+          </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button className="gap-2" size="sm">
               Xizmat qo'shish
             </Button>
           </DialogTrigger>
@@ -254,48 +283,63 @@ function Services() {
       </div>
 
       {/* Services Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Xizmatlar ro'yxati
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4 font-medium">Xizmat nomi</th>
-                  <th className="text-left p-4 font-medium">Kategoriya</th>
-                  <th className="text-left p-4 font-medium">Narx</th>
-                  <th className="text-left p-4 font-medium">Holat</th>
-                  <th className="text-left p-4 font-medium">Amallar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredServices.map((service) => (
-                  <tr key={service.id} className="border-b hover:bg-muted/50">
-                    <td className="p-4 font-medium">{service.name}</td>
-                    <td className="p-4">
-                      <Badge variant="outline">{service.category}</Badge>
-                    </td>
-                    <td className="p-4">
+      <div className="space-y-4">
+        <div className="bg-background overflow-hidden rounded-md border [&>div]:max-h-96">
+          {filteredServices.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r bg-muted/50">
+                  <TableHead className="w-10 text-center">№</TableHead>
+                  <TableHead className="font-medium">Xizmat nomi</TableHead>
+                  <TableHead>Kategoriya</TableHead>
+                  <TableHead>Narx</TableHead>
+                  <TableHead>Holat</TableHead>
+                  <TableHead>Amallar</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {filteredServices.map((service, index) => (
+                  <TableRow
+                    key={service.id}
+                    className="*:border-border [&>:not(:last-child)]:border-r hover:bg-transparent"
+                  >
+                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="font-medium max-w-[18rem]">
+                      <span className="truncate block max-w-[18rem]">
+                        {service.name}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs font-medium">
+                        {service.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-1">
+                        <Tag className="h-3 w-3 text-muted-foreground" />
                         <span className="font-medium">
-                          {service.price.toLocaleString('uz-UZ')} so'm
+                          {service.price.toLocaleString('uz-UZ')} so‘m
                         </span>
                       </div>
-                    </td>
-                    <td className="p-4">
+                    </TableCell>
+                    <TableCell>
                       <Badge
-                        className={`${getStatusColor(service.status)} text-white`}
+                        className={cn(
+                          'text-white font-medium border-none',
+                          service.status === 'active' &&
+                            'bg-green-500 hover:bg-green-600',
+                          service.status === 'inactive' &&
+                            'bg-gray-400 hover:bg-gray-500',
+                          service.status === 'pending' &&
+                            'bg-amber-500 hover:bg-amber-600'
+                        )}
                       >
                         {getStatusText(service.status)}
                       </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -312,23 +356,34 @@ function Services() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredServices.length === 0 && (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">
-                Hech qanday xizmat topilmadi
-              </p>
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8 lg:py-12 border rounded-lg">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <CircleOff />
+                  </EmptyMedia>
+                  <EmptyTitle>Hali xizmatlar mavjud emas!</EmptyTitle>
+                  <EmptyDescription>
+                    Yangi xizmat qo‘shish uchun "Xizmat qo‘shish" tugmasini
+                    bosing.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button size="sm">Xizmat qo‘shish</Button>
+                </EmptyContent>
+              </Empty>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+        <CustomPagination />
+      </div>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -432,7 +487,6 @@ function Services() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
