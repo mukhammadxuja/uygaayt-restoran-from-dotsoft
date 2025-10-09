@@ -156,17 +156,29 @@ const data = {
 
 function DashboardLayout() {
   const { font } = useFont();
-  const { clients } = useAppContext();
   const location = useLocation();
-  const { clientId } = useParams();
 
-  // Check if we're on client details page
-  const isClientDetailsPage =
-    location.pathname.includes('/clients/') && clientId;
-  const client = isClientDetailsPage
-    ? clients.find((c) => c.id === clientId)
-    : null;
-  const showBackButton = isClientDetailsPage;
+  // Determine if we should show back button based on current route
+  const shouldShowBackButton = () => {
+    const pathSegments = location.pathname
+      .replace('/dashboard', '')
+      .split('/')
+      .filter((segment) => segment);
+
+    const [mainRoute, id] = pathSegments;
+
+    // Show back button for detail pages and edit pages
+    const detailPages = [
+      'clients',
+      'employees',
+      'order-detail',
+      'edit-order',
+      'template-detail',
+    ];
+    return detailPages.includes(mainRoute) && !!id;
+  };
+
+  const showBackButton = shouldShowBackButton();
 
   return (
     <div style={{ fontFamily: font }}>
@@ -177,10 +189,7 @@ function DashboardLayout() {
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1 w-5 h-5" />
               <Separator orientation="vertical" className="mr-2 h-4" />
-              <CustomBreadcrumb
-                clientName={client?.name}
-                showBackButton={showBackButton}
-              />
+              <CustomBreadcrumb showBackButton={showBackButton} />
             </div>
           </header>
 
