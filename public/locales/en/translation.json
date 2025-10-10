@@ -73,5 +73,14 @@
   "Mijozlar": "Clients",
   "Xodimlar": "Employees",
   "Buyurtmalar": "Orders",
-  "Sozlamalar": "Settings"
+  "Sozlamalar": "Settings",
+  "Xizmatlar": "Services",
+  "Buyurtma shablonlari": "Order Templates",
+  "Yangi buyurtma": "New Order",
+  "Buyurtma tafsilotlari": "Order Details",
+  "Buyurtmani tahrirlash": "Edit Order",
+  "Mijoz tafsilotlari": "Client Details",
+  "Xodim tafsilotlari": "Employee Details",
+  "Shablon tafsilotlari": "Template Details",
+  "Yangi shablon": "New Template"
 }
