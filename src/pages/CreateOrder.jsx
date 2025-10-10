@@ -32,26 +32,52 @@ import { Textarea } from '@/components/ui/textarea';
 import { Controller, useForm } from 'react-hook-form';
 import { useAppContext } from '@/context/AppContext';
 import { useTemplates } from '@/hooks/use-templates';
-import { useServices } from '@/hooks/use-services';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 
 export default function CreateOrder({ onSubmit }) {
+  const [selectedTemplateServices, setSelectedTemplateServices] = useState([]);
+
+  const defaultOrderData = {
+    services: [
+      selectedTemplateServices.map((service) => ({
+        ...service,
+        quantity: 1,
+        date: new Date(),
+        comment: service.comment,
+        price: service.price,
+        category: service.category,
+        name: service.name,
+        isWorking: service.isWorking,
+      })),
+    ],
+    payments: [],
+    comments: [],
+    status: 'pending',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    clientId: '',
+    clientName: '',
+    clientPhone: '',
+    weddingPlace: '',
+    templateId: '',
+    templatePrice: 0,
+    contractPrice: 0,
+    pledgingPrice: 0,
+    remainingAmount: 0,
+  };
+  const [orderData, setOrderData] = useState(defaultOrderData);
+
   const { clients, addOrder } = useAppContext();
   const { templates, loading: templatesLoading } = useTemplates();
-  const { services } = useServices();
   const [selectedClientId, setSelectedClientId] = useState('');
   const [isNewClient, setIsNewClient] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
-  const [formattedPrice, setFormattedPrice] = useState('');
-  const [selectedTemplateServices, setSelectedTemplateServices] = useState([]);
 
   const {
     register,
     handleSubmit,
     control,
     reset,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -95,47 +121,19 @@ export default function CreateOrder({ onSubmit }) {
     },
   });
 
-  // Apply template data to form
   const applyTemplate = (templateId) => {
     const template = templates.find((t) => t.id === templateId);
     if (!template) return;
 
-    // Set selected template services for table display
     setSelectedTemplateServices(template.services || []);
-
-    // Apply services from template
-    const templateServices = template.services || [];
-    const options = {};
-
-    // Map template services to form options
-    templateServices.forEach((service) => {
-      const serviceName = service.name.toLowerCase();
-      if (serviceName.includes('nikoh')) options.nikoh = true;
-      if (serviceName.includes('fotosessiya')) options.fotosessiya = true;
-      if (serviceName.includes('bazm')) options.bazm = true;
-      if (serviceName.includes('chimilidq')) options.chimilidq = true;
-      if (serviceName.includes('el oshi')) options.elOshi = true;
-      if (serviceName.includes('fotixa tuy')) options.fotixaTuy = true;
-      if (serviceName.includes('kelin salom')) options.kelinSalom = true;
-      if (serviceName.includes('qiz bazm')) options.qizBazm = true;
-      if (serviceName.includes('love story')) options.loveStory = true;
+    setOrderData({
+      ...orderData,
+      services: template.services || [],
     });
-
-    // Apply additional services
-    const additionalServices = template.additionalServices || [];
-    const fleshka = additionalServices.includes('Flash');
-    const pramoyEfir = additionalServices.includes('Live');
-
-    // Update form values
-    setValue('options', options);
-    setValue('fleshka', fleshka);
-    setValue('pramoyEfir', pramoyEfir);
-
-    // Calculate and set price
-    calculatePrice(options, fleshka, pramoyEfir);
   };
+  console.log(orderData);
+  
 
-  // Format number with spaces for better readability
   const formatNumber = (num) => {
     return (
       num
@@ -146,72 +144,6 @@ export default function CreateOrder({ onSubmit }) {
         .replace(/,/g, ' ') || '0'
     );
   };
-
-  // Calculate total price based on selected services
-  const calculatePrice = useCallback(
-    (options = {}, fleshka = false, pramoyEfir = false) => {
-      let totalPrice = 0;
-
-      // Base prices for services (you can adjust these values)
-      const servicePrices = {
-        nikoh: 500000,
-        fotosessiya: 300000,
-        bazm: 400000,
-        chimilidq: 200000,
-        elOshi: 150000,
-        fotixaTuy: 250000,
-        kelinSalom: 100000,
-        qizBazm: 350000,
-        loveStory: 200000,
-      };
-
-      // Add prices for selected services
-      Object.entries(options).forEach(([service, isSelected]) => {
-        if (isSelected && servicePrices[service]) {
-          totalPrice += servicePrices[service];
-        }
-      });
-
-      // Add prices for additional services
-      if (fleshka) totalPrice += 50000; // Flash drive
-      if (pramoyEfir) totalPrice += 100000; // Live streaming
-
-      // Set the calculated price
-      setValue('narx', totalPrice);
-      setFormattedPrice(formatNumber(totalPrice));
-    },
-    [setValue, formatNumber]
-  );
-
-  // Handle price input formatting
-  const handlePriceChange = (e) => {
-    const value = e.target.value;
-    // Remove all non-digit characters
-    const numericValue = value.replace(/\D/g, '');
-    // Update the actual form value
-    setValue('narx', parseInt(numericValue) || 0);
-    // Update the formatted display
-    setFormattedPrice(formatNumber(parseInt(numericValue) || 0));
-  };
-
-  // Watch form changes and recalculate price
-  const watchedOptions = watch('options');
-  const watchedFleshka = watch('fleshka');
-  const watchedPramoyEfir = watch('pramoyEfir');
-  const watchedNarx = watch('narx');
-
-  useEffect(() => {
-    if (watchedOptions !== undefined) {
-      calculatePrice(watchedOptions, watchedFleshka, watchedPramoyEfir);
-    }
-  }, [watchedOptions, watchedFleshka, watchedPramoyEfir]);
-
-  // Update formatted price when narx changes
-  useEffect(() => {
-    if (watchedNarx !== undefined) {
-      setFormattedPrice(formatNumber(watchedNarx));
-    }
-  }, [watchedNarx]);
 
   const onFormSubmit = async (data) => {
     try {
@@ -239,7 +171,6 @@ export default function CreateOrder({ onSubmit }) {
   return (
     <div className="my-4">
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-        {/* Template Selection */}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Shablonni tanlang</Label>
@@ -319,46 +250,153 @@ export default function CreateOrder({ onSubmit }) {
           </div>
         </div>
 
-        {/* Basic Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Ma'lumotlar</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="sana">Sana</Label>
-              <Controller
-                name="sana"
-                control={control}
-                rules={{ required: 'Sana majburiy' }}
-                render={({ field }) => (
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    className="w-full"
-                  />
-                )}
-              />
-              {errors.sana && (
-                <p className="text-sm text-red-500">{errors.sana.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="kameraSoni">Kamera soni</Label>
-              <Input
-                id="kameraSoni"
-                type="number"
-                min="1"
-                {...register('kameraSoni', {
-                  required: true,
-                  valueAsNumber: true,
-                })}
-              />
-            </div>
+          <Card>
+            <CardHeader>
+              <span className="text-lg font-semibold text-foreground">
+                Kameralar
+              </span>
+            </CardHeader>
+            <CardContent>
+              {orderData.services.filter(
+                (service) => service.category === 'Kamera'
+              ).length === 0 ? (
+                <div className="flex items-center justify-center py-4 text-gray-500">
+                  <div className="text-center">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-6 h-6 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm">Kamera xizmatlari mavjud emas</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {orderData.services
+                    .filter((service) => service.category === 'Kamera')
+                    .map((service, index) => (
+                      <div key={service.id} className="group">
+                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-900">
+                                {service.name}
+                              </h4>
+                            </div>
+                          </div>
 
-            <div>Shu sanadagi buyurtmalar</div>
-          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <Label
+                                htmlFor={`quantity-${service.id}`}
+                                className="text-xs font-medium text-gray-700"
+                              >
+                                Miqdor:
+                              </Label>
+                              <div className="relative">
+                                <Input
+                                  id={`quantity-${service.id}`}
+                                  type="number"
+                                  min="1"
+                                  value={service.quantity || ''}
+                                  placeholder={service.quantity}
+                                  onChange={(e) =>
+                                    setOrderData({
+                                      ...orderData,
+                                      services: orderData.services.map((s) =>
+                                        s.id === service.id
+                                          ? {
+                                              ...s,
+                                              quantity:
+                                                e.target.value === ''
+                                                  ? ''
+                                                  : parseInt(e.target.value) ||
+                                                    1,
+                                            }
+                                          : s
+                                      ),
+                                    })
+                                  }
+                                  onBlur={(e) => {
+                                    if (
+                                      e.target.value === '' ||
+                                      parseInt(e.target.value) < 1
+                                    ) {
+                                      setOrderData({
+                                        ...orderData,
+                                        services: orderData.services.map((s) =>
+                                          s.id === service.id
+                                            ? {
+                                                ...s,
+                                                quantity: 1,
+                                              }
+                                            : s
+                                        ),
+                                      });
+                                    }
+                                  }}
+                                  className="w-16 h-7 text-center text-xs border-gray-300 focus:border-blue-500 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {formatNumber(
+                                  (service.price || 0) * (service.quantity || 1)
+                                )}{' '}
+                                so'm
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Services Table - Only show after template selection */}
         {selectedTemplateId &&
           selectedTemplateId !== 'loading' &&
           selectedTemplateId !== 'no-templates' &&
@@ -407,12 +445,12 @@ export default function CreateOrder({ onSubmit }) {
                               <DatePicker
                                 value={field.value}
                                 onChange={field.onChange}
-                                className="w-8 h-8"
+                                className="h-8"
                               />
                             )}
                           />
                         </TableCell>
-                        <TableCell className="py-2 border-r">
+                        <TableCell className="py-2 border-r w-8">
                           <Controller
                             name={`templateServices.${index}.notes`}
                             control={control}

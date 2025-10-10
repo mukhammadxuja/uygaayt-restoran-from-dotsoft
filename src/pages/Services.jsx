@@ -77,6 +77,10 @@ function Services() {
         const serviceData = {
           ...newService,
           price: parseInt(newService.price),
+          quantity: 0,
+          date: '',
+          isWorking: [],
+          comment: '',
         };
         await addService(serviceData);
         setNewService({
@@ -84,6 +88,10 @@ function Services() {
           price: '',
           status: 'active',
           category: '',
+          quantity: 0,
+          date: '',
+          isWorking: [],
+          comment: '',
         });
         setIsAddDialogOpen(false);
         toast.success("Xizmat muvaffaqiyatli qo'shildi");
@@ -225,6 +233,7 @@ function Services() {
                     <SelectItem value="Foto">Foto</SelectItem>
                     <SelectItem value="Albom">Albom</SelectItem>
                     <SelectItem value="Taklifnoma">Taklifnoma</SelectItem>
+                    <SelectItem value="Kamera">Kamera</SelectItem>
                     <SelectItem value="Boshqa">Boshqa</SelectItem>
                   </SelectContent>
                 </Select>
@@ -332,7 +341,7 @@ function Services() {
                           service.status === 'inactive' &&
                             'bg-gray-400 hover:bg-gray-500',
                           service.status === 'pending' &&
-                            'bg-amber-500 hover:bg-amber-600'
+                            'bg-red-500 hover:bg-red-600'
                         )}
                       >
                         {getStatusText(service.status)}
@@ -353,7 +362,7 @@ function Services() {
                           onClick={() => handleDeleteService(service)}
                           className="text-destructive hover:text-destructive"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" color="red" />
                         </Button>
                       </div>
                     </TableCell>
@@ -438,6 +447,7 @@ function Services() {
                     <SelectItem value="Video">Video</SelectItem>
                     <SelectItem value="Albom">Albom</SelectItem>
                     <SelectItem value="Taklifnoma">Taklifnoma</SelectItem>
+                    <SelectItem value="Kamera">Kamera</SelectItem>
                     <SelectItem value="Boshqa">Boshqa</SelectItem>
                   </SelectContent>
                 </Select>
@@ -512,6 +522,7 @@ function Services() {
               variant="destructive"
               onClick={confirmDeleteService}
               disabled={isSubmitting}
+              className="bg-red-500 hover:bg-red-600 text-white"
             >
               {isSubmitting ? (
                 <>

@@ -45,16 +45,13 @@ function CreateTemplate() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load template data if copying from existing template
   React.useEffect(() => {
     if (copyFromId && templates.length > 0) {
       const templateToCopy = templates.find((t) => t.id === copyFromId);
       if (templateToCopy) {
-        // Convert Firestore template data to form state
         const selectedServiceIds =
           templateToCopy.services?.map((s) => s.id) || [];
 
-        // Convert render options back to checkboxes
         const imageQuality = {
           capture4k:
             templateToCopy.render?.includes('4K tasvirga olish') || false,
@@ -66,7 +63,6 @@ function CreateTemplate() {
             ) || false,
         };
 
-        // Convert additional services back to checkboxes
         const additionalServices = {
           live: templateToCopy.additionalServices?.includes('Live') || false,
           flash: templateToCopy.additionalServices?.includes('Flash') || false,
@@ -88,12 +84,10 @@ function CreateTemplate() {
     }
   }, [copyFromId, templates]);
 
-  // Filter only active services and group by category
   const activeServices = services.filter(
     (service) => service.status === 'active'
   );
 
-  // Group services by category
   const servicesByCategory = activeServices.reduce((acc, service) => {
     const category = service.category || 'Boshqa';
     if (!acc[category]) {
@@ -103,7 +97,6 @@ function CreateTemplate() {
     return acc;
   }, {});
 
-  // Get unique categories
   const categories = Object.keys(servicesByCategory);
 
   const handleBack = () => {
@@ -111,7 +104,6 @@ function CreateTemplate() {
   };
 
   const handleSave = async () => {
-    // Validate required fields
     if (!template.title.trim()) {
       alert('Shablon nomi majburiy!');
       return;
@@ -123,7 +115,6 @@ function CreateTemplate() {
 
     setIsSaving(true);
     try {
-      // Get selected services with their details
       const selectedServicesData = template.selectedServices.map(
         (serviceId) => {
           const service = activeServices.find((s) => s.id === serviceId);
@@ -132,11 +123,14 @@ function CreateTemplate() {
             name: service.name,
             price: service.price,
             category: service.category,
+            quantity: 1,
+            date: service.date,
+            isWorking: service.isWorking,
+            comment: service.comment,
           };
         }
       );
 
-      // Prepare render options array
       const renderOptions = [];
       if (template.imageQuality.capture4k) {
         renderOptions.push('4K tasvirga olish');
@@ -148,7 +142,6 @@ function CreateTemplate() {
         renderOptions.push('4K tasvirga olish, FullHD render');
       }
 
-      // Prepare additional services
       const additionalServices = [];
       if (template.additionalServices.live) {
         additionalServices.push('Live');
@@ -159,20 +152,18 @@ function CreateTemplate() {
       if (template.additionalServices.album) {
         additionalServices.push('Albom');
       }
-      // Add custom additions
       additionalServices.push(
         ...template.additionalServices.customAdditions.filter((item) =>
           item.trim()
         )
       );
 
-      // Prepare template data for Firestore
       const templateData = {
         title: template.title,
         description: template.description,
-        services: selectedServicesData, // Services array with id, name, price
-        render: renderOptions, // Image quality options
-        additionalServices: additionalServices, // Additional services
+        services: selectedServicesData,
+        render: renderOptions,
+        additionalServices: additionalServices,
       };
 
       await addTemplate(templateData);
@@ -284,6 +275,31 @@ function CreateTemplate() {
                   rows={3}
                 />
               </div>
+
+              {/* Total Price Display */}
+              {template.selectedServices.length > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-blue-900">
+                      Tanlangan xizmatlar umumiy narxi:
+                    </span>
+                    <span className="text-lg font-bold text-blue-900">
+                      {template.selectedServices
+                        .reduce((total, serviceId) => {
+                          const service = activeServices.find(
+                            (s) => s.id === serviceId
+                          );
+                          return total + (service ? service.price : 0);
+                        }, 0)
+                        .toLocaleString('uz-UZ')}{' '}
+                      so'm
+                    </span>
+                  </div>
+                  <div className="text-xs text-blue-700 mt-1">
+                    {template.selectedServices.length} ta xizmat tanlandi
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -311,7 +327,7 @@ function CreateTemplate() {
               </CardContent>
             </Card>
           ) : activeServices.length === 0 ? (
-            <Card>
+            <Card className="h-auto">
               <CardContent>
                 <div className="text-center py-8">
                   <p className="text-sm text-gray-500 mb-2">
@@ -324,106 +340,54 @@ function CreateTemplate() {
               </CardContent>
             </Card>
           ) : (
-            categories.map((category) => (
-              <Card key={category}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{category}</CardTitle>
-                  <CardDescription>
-                    {category} kategoriyasidagi xizmatlar
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {servicesByCategory[category].map((service) => (
-                      <div
-                        key={service.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`service-${service.id}`}
-                          checked={template.selectedServices.includes(
-                            service.id
-                          )}
-                          onCheckedChange={() =>
-                            handleServiceToggle(service.id)
-                          }
-                        />
-                        <label
-                          htmlFor={`service-${service.id}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
-                        >
-                          <div className="flex justify-between items-center">
-                            <span>{service.name}</span>
-                            <span className="text-gray-500">
-                              {service.price.toLocaleString('uz-UZ')} so'm
-                            </span>
-                          </div>
-                        </label>
+            <Card className="h-auto">
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  {categories.map((category, index) => (
+                    <div key={category}>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <h3 className="text-lg font-semibold">{category}</h3>
+                        <div className="flex-1 h-px bg-gray-200"></div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                      <div className="space-y-3">
+                        {servicesByCategory[category].map((service) => (
+                          <div
+                            key={service.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={`service-${service.id}`}
+                              checked={template.selectedServices.includes(
+                                service.id
+                              )}
+                              onCheckedChange={() =>
+                                handleServiceToggle(service.id)
+                              }
+                            />
+                            <label
+                              htmlFor={`service-${service.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span>{service.name}</span>
+                                <span className="text-gray-500">
+                                  {service.price.toLocaleString('uz-UZ')} so'm
+                                </span>
+                              </div>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {index < categories.length - 1 && (
+                        <div className="mt-6 h-px bg-gray-100"></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
-
-        {/* Image Quality Options */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tasvir va render sifati</CardTitle>
-            <CardDescription>
-              Tasvirga olish va render sifati tanlang
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="capture4k"
-                  checked={template.imageQuality.capture4k}
-                  onCheckedChange={() => handleImageQualityToggle('capture4k')}
-                />
-                <label
-                  htmlFor="capture4k"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  4K tasvirga olish
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="render4kFullHD"
-                  checked={template.imageQuality.render4kFullHD}
-                  onCheckedChange={() =>
-                    handleImageQualityToggle('render4kFullHD')
-                  }
-                />
-                <label
-                  htmlFor="render4kFullHD"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  4K + FullHD render
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="capture4kRenderFullHD"
-                  checked={template.imageQuality.capture4kRenderFullHD}
-                  onCheckedChange={() =>
-                    handleImageQualityToggle('capture4kRenderFullHD')
-                  }
-                />
-                <label
-                  htmlFor="capture4kRenderFullHD"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  4K tasvirga olish, FullHD render
-                </label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
