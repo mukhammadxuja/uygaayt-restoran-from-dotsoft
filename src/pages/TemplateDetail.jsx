@@ -18,6 +18,9 @@ import {
   Trash2,
   Eye,
   Loader2,
+  Layers,
+  Image,
+  PlusCircle,
 } from 'lucide-react';
 import { useTemplates } from '@/hooks/use-templates';
 
@@ -93,27 +96,28 @@ function TemplateDetail() {
   };
 
   return (
-    <div className="space-y-6 my-4">
+    <div className="space-y-4 my-2">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Orqaga
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">{template.title}</h1>
-          <p className="text-gray-600 mt-1">{template.description}</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {template.title}
+          </h2>
+          <p className="text-muted-foreground">
+            {template.description || 'Tafsilot mavjud emas'}
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleEdit} className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={handleEdit}
+            className="flex items-center gap-2"
+          >
             <Edit className="h-4 w-4" />
             Tahrirlash
           </Button>
           <Button
+            size="sm"
             variant="destructive"
             onClick={handleDelete}
             className="flex items-center gap-2"
@@ -124,168 +128,114 @@ function TemplateDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Template Info */}
-        <div className="lg:col-span-1">
-          <Card>
+      <div className="">
+        <div className="flex items-center gap-2 flex-wrap mb-4">
+          <span className="mt-1 inline-flex items-center gap-1 px-2 py-1 text-sm font-medium rounded-full bg-blue-50 text-blue-700 w-fit">
+            <Layers className="h-4 w-4" />
+            {template.services?.length || 0} ta xizmat
+          </span>
+          <span className="mt-1 inline-flex items-center gap-1 px-2 py-1 text-sm font-medium rounded-full bg-green-50 text-green-700 w-fit">
+            <Image className="h-4 w-4" />
+            {template.render?.length || 0} ta variant
+          </span>
+          <span className="mt-1 inline-flex items-center gap-1 px-2 py-1 text-sm font-medium rounded-full bg-purple-50 text-purple-700 w-fit">
+            <PlusCircle className="h-4 w-4" />
+            {template.additionalServices?.length || 0} ta qo'shimcha
+          </span>
+          <div className="flex items-center gap-2 mt-1 text-sm text-gray-900">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            {template.createdAt
+              ? new Date(template.createdAt.seconds * 1000).toLocaleDateString(
+                  'uz-UZ'
+                )
+              : "Noma'lum"}
+          </div>
+        </div>
+
+        <div>
+          <Card className="border border-border shadow-sm hover:shadow-md transition-all duration-300">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Shablon ma'lumotlari
+              <CardTitle className="text-lg font-semibold">
+                Shablon tuzilmasi
               </CardTitle>
+              <CardDescription className="text-sm">
+                Bu shablon <strong>{template.services?.length || 0}</strong> ta
+                xizmat, <strong>{template.render?.length || 0}</strong> ta
+                render variant va{' '}
+                <strong>{template.additionalServices?.length || 0}</strong> ta
+                qo‘shimcha xizmatni o‘z ichiga oladi.
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Xizmatlar soni
-                </label>
-                <p className="text-sm text-gray-900 bg-blue-100 px-2 py-1 rounded mt-1 inline-block">
-                  {template.services?.length || 0} ta xizmat
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Render variantlari
-                </label>
-                <p className="text-sm text-gray-900 bg-green-100 px-2 py-1 rounded mt-1 inline-block">
-                  {template.render?.length || 0} ta variant
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Qo'shimcha xizmatlar
-                </label>
-                <p className="text-sm text-gray-900 bg-purple-100 px-2 py-1 rounded mt-1 inline-block">
-                  {template.additionalServices?.length || 0} ta xizmat
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Yaratilgan
-                </label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-900">
-                    {template.createdAt
-                      ? new Date(
-                          template.createdAt.seconds * 1000
-                        ).toLocaleDateString('uz-UZ')
-                      : "Noma'lum"}
-                  </span>
-                </div>
-              </div>
-              {template.updatedAt && (
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Yangilangan
-                  </label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-900">
-                      {new Date(
-                        template.updatedAt.seconds * 1000
-                      ).toLocaleDateString('uz-UZ')}
-                    </span>
+              {template.services?.length > 0 && (
+                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5">
+                  <h3 className="text-base font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                    <Layers className="h-4 w-4" />
+                    Tanlangan xizmatlar
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {template.services.map((service, i) => (
+                      <div
+                        key={i}
+                        className="rounded-lg bg-white p-3 border border-border shadow-sm hover:shadow transition"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-800">
+                            {service.name}
+                          </span>
+                          <span className="text-sm text-gray-600">
+                            {service.price?.toLocaleString('uz-UZ')} so‘m
+                          </span>
+                        </div>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-[2px] rounded-md">
+                          {service.category || 'Kategoriya yo‘q'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Template Structure */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Shablon tuzilmasi</CardTitle>
-              <CardDescription>
-                Bu shablon {template.services?.length || 0} ta xizmat,{' '}
-                {template.render?.length || 0} ta render variant va{' '}
-                {template.additionalServices?.length || 0} ta qo'shimcha
-                xizmatni o'z ichiga oladi
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Services Section */}
-                {template.services && template.services.length > 0 && (
-                  <div className="border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      Tanlangan xizmatlar
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {template.services.map((service, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-gray-700">
-                              {service.name}
-                            </label>
-                            <span className="text-sm text-gray-500">
-                              {service.price?.toLocaleString('uz-UZ')} so'm
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {service.category || "Kategoriya yo'q"}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* --- Render Options --- */}
+              {template.render?.length > 0 && (
+                <div className="bg-green-50/50 border border-green-100 rounded-xl p-5">
+                  <h3 className="text-base font-semibold text-green-800 mb-3 flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    Render variantlari
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {template.render.map((r, i) => (
+                      <span
+                        key={i}
+                        className="text-sm bg-white border border-border rounded-full px-3 py-[4px] shadow-sm"
+                      >
+                        {r}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Render Options Section */}
-                {template.render && template.render.length > 0 && (
-                  <div className="border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      Render variantlari
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {template.render.map((render, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">
-                              {render}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                              Render variant
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* --- Additional Services --- */}
+              {template.additionalServices?.length > 0 && (
+                <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-5">
+                  <h3 className="text-base font-semibold text-purple-800 mb-3 flex items-center gap-2">
+                    <PlusCircle className="h-4 w-4" />
+                    Qo‘shimcha xizmatlar
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {template.additionalServices.map((srv, i) => (
+                      <span
+                        key={i}
+                        className="text-sm bg-white border border-border rounded-full px-3 py-[4px] shadow-sm"
+                      >
+                        {srv}
+                      </span>
+                    ))}
                   </div>
-                )}
-
-                {/* Additional Services Section */}
-                {template.additionalServices &&
-                  template.additionalServices.length > 0 && (
-                    <div className="border rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Qo'shimcha xizmatlar
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {template.additionalServices.map((service, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                {service}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                Qo'shimcha xizmat
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

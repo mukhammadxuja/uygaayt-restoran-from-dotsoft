@@ -1,12 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import {
   Plus,
@@ -32,7 +26,6 @@ function OrderTemplate() {
   const handleCreateNew = () => {
     navigate('/dashboard/create-template');
   };
-  console.log(templates[0]);
 
   return (
     <div className="space-y-6 my-4">
