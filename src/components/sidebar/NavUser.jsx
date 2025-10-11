@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 export function NavUser() {
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
   const { userData, user } = useAppContext();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -43,9 +43,20 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="bg-transparent border border-border hover:bg-muted/90 data-[state=open]:bg-muted data-[state=open]:text-sidebar-accent-foreground rounded-lg"
+              tooltip={
+                state === 'collapsed'
+                  ? userData?.displayName || 'User'
+                  : undefined
+              }
+              className={`bg-transparent border border-border hover:bg-muted/90 data-[state=open]:bg-muted data-[state=open]:text-sidebar-accent-foreground rounded-lg group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!p-2 group-data-[collapsible=icon]:!w-10 group-data-[collapsible=icon]:!h-10 group-data-[collapsible=icon]:!mx-auto ${
+                state === 'collapsed' ? 'justify-center' : ''
+              }`}
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar
+                className={`rounded-lg group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 ${
+                  state === 'collapsed' ? 'h-8 w-8' : 'h-8 w-8'
+                }`}
+              >
                 <AvatarImage
                   src={
                     userData?.photoURL
@@ -58,7 +69,11 @@ export function NavUser() {
                 />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div
+                className={`grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden ${
+                  state === 'collapsed' ? 'hidden' : ''
+                }`}
+              >
                 <span className="truncate font-semibold">
                   {userData?.displayName ? userData?.displayName : 'Anonymous'}
                 </span>
@@ -66,7 +81,11 @@ export function NavUser() {
                   {user?.isAnonymous ? 'anonymous@gmail.com' : user?.email}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto w-5 h-5" />
+              <ChevronsUpDown
+                className={`ml-auto w-5 h-5 group-data-[collapsible=icon]:hidden ${
+                  state === 'collapsed' ? 'hidden' : ''
+                }`}
+              />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

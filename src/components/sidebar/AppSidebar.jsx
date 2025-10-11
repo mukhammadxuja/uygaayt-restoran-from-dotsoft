@@ -68,12 +68,26 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar collapsible="icon" className="px-2" {...props}>
-      <SidebarHeader>
-        <h2 className="text-lg font-bold px-2">Creative Studio</h2>
+      <SidebarHeader className="pt-4">
+        {/* Show full logo when expanded */}
+        <img
+          src="/assets/logos/dark.png"
+          alt="Creative Studio"
+          className="w-40 mx-auto group-data-[collapsible=icon]:hidden"
+        />
+
+        {/* Show shape logo when collapsed */}
+        <img
+          src="/assets/logos/shape.png"
+          alt="Creative Studio"
+          className="w-10 h-10 mx-auto hidden group-data-[collapsible=icon]:block"
+        />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="space-y-0.5">
-          <SidebarGroupLabel>Asosiy bo'limlar</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+            Asosiy bo'limlar
+          </SidebarGroupLabel>
           {navItems.map((item, i) => {
             let isActive = false;
 
@@ -89,32 +103,38 @@ export function AppSidebar({ ...props }) {
               <Link key={i} to={item.url}>
                 <SidebarMenuButton
                   tooltip={item.title}
-                  className={`flex items-center ${
+                  className={`flex items-center group-data-[collapsible=icon]:justify-center ${
                     isActive
                       ? 'bg-primary text-white dark:text-black hover:bg-primary/90 hover:text-white border-l-2 border-primary'
                       : 'hover:bg-muted'
                   }`}
                 >
-                  <item.icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{item.title}</span>
+                  <item.icon className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
+                  <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                    {item.title}
+                  </span>
                 </SidebarMenuButton>
               </Link>
             );
           })}
 
-          <SidebarGroupLabel>Sozlamalar</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+            Sozlamalar
+          </SidebarGroupLabel>
           <Link to="/dashboard/settings">
             <SidebarMenuButton
               tooltip="Sozlamalar"
-              className={`flex items-center ${
+              className={`flex items-center group-data-[collapsible=icon]:justify-center ${
                 location.pathname === '/dashboard/settings' ||
                 location.pathname.startsWith('/dashboard/settings/')
                   ? 'bg-primary text-white hover:bg-primary/90 hover:text-white border-l-2 border-primary'
                   : 'hover:bg-muted'
               }`}
             >
-              <Settings className="w-4 h-4" />
-              <span className="text-sm font-medium">Sozlamalar</span>
+              <Settings className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
+              <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                Sozlamalar
+              </span>
             </SidebarMenuButton>
           </Link>
         </SidebarGroup>
