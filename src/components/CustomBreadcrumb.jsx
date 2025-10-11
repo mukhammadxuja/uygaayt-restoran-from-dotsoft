@@ -149,12 +149,20 @@ function CustomBreadcrumb({ showBackButton = false }) {
   const getBreadcrumbItems = () => {
     const items = [];
 
+    // Check if we're on the root dashboard page
+    const isRootDashboard = location.pathname === '/dashboard';
+
     // Always add Dashboard
     items.push({
       label: t('Dashboard'),
       path: '/dashboard',
-      isLast: false,
+      isLast: isRootDashboard, // If it's root dashboard, this is the last item
     });
+
+    // If we're on root dashboard, return early with just Dashboard
+    if (isRootDashboard) {
+      return items;
+    }
 
     const config = getBreadcrumbConfig();
 
