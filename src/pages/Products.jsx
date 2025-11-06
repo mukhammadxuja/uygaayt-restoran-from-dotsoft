@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,43 +7,301 @@ import {
   Edit,
   Trash2,
   Eye,
-  Calendar,
-  User,
-  Phone,
-  DollarSign,
-  Loader2,
   Search,
-  CircleOff,
-  Apple,
-  MoreHorizontal,
-  Package,
-  Star,
-  ShoppingCart,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  CheckCircle2,
+  XCircle,
+  Percent,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { formatNumber } from '@/lib/utils';
+import { toast } from 'sonner';
+
+// Fake data generator
+const generateFakeProducts = () => {
+  const categories = ['Ovqat', 'Ichimlik', 'Salat', 'Desert', 'Fast Food'];
+  const statuses = ['active', 'hidden'];
+  const products = [];
+
+  const productNames = [
+    'Lavash',
+    'Burger',
+    'Pizza',
+    'Salat',
+    'Coca Cola',
+    'Pepsi',
+    'Fanta',
+    'Shashlik',
+    'Somsa',
+    'Manti',
+    'Lag\'mon',
+    'Osh',
+    'Mastava',
+    'Sho\'rva',
+    'Chuchvara',
+    'Qozon Kabob',
+    'Tandir',
+    'Non',
+    'Tort',
+    'Pirog',
+  ];
+
+  for (let i = 1; i <= 50; i++) {
+    const name = productNames[Math.floor(Math.random() * productNames.length)];
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const price = Math.floor(Math.random() * 100000) + 10000;
+    const stock = Math.floor(Math.random() * 100);
+    const sku = `SKU-${String(i).padStart(6, '0')}`;
+
+    products.push({
+      id: `PROD-${String(i).padStart(6, '0')}`,
+      name: name,
+      sku: sku,
+      category: category,
+      price: price,
+      stock: stock,
+      status: status,
+      thumbnail: `https://via.placeholder.com/50?text=${encodeURIComponent(name)}`,
+    });
+  }
+
+  return products;
+};
 
 function Products() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [fakeProducts] = useState(generateFakeProducts());
 
-  const handleCreateNew = () => {
-    // navigate('/dashboard/create-product');
-    console.log('Create new product');
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+
+  // Pagination states
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Bulk selection
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Dialogs
+  const [updatePriceDialogOpen, setUpdatePriceDialogOpen] = useState(false);
+  const [pricePercent, setPricePercent] = useState('');
+
+  // Filter and sort products
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = [...fakeProducts];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((product) => product.status === statusFilter);
+    }
+
+    // Category filter
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(
+        (product) => product.category === categoryFilter
+      );
+    }
+
+    // Sort
+    if (sortBy === 'newest') {
+      filtered.sort((a, b) => a.id.localeCompare(b.id));
+    } else if (sortBy === 'price_low') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price_high') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'name') {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return filtered;
+  }, [fakeProducts, searchTerm, statusFilter, categoryFilter, sortBy]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(
+    filteredAndSortedProducts.length / itemsPerPage
+  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredAndSortedProducts.slice(
+    startIndex,
+    endIndex
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedProducts([]);
+    setSelectAll(false);
+  }, [
+    searchTerm,
+    statusFilter,
+    categoryFilter,
+    sortBy,
+    itemsPerPage,
+  ]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
-  const handleEdit = (productId) => {
-    // navigate(`/dashboard/edit-product/${productId}`);
-    console.log('Edit product:', productId);
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
+
+  // Selection handlers
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedProducts(paginatedProducts.map((p) => p.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+
+  const handleSelectProduct = (productId, checked) => {
+    if (checked) {
+      setSelectedProducts([...selectedProducts, productId]);
+    } else {
+      setSelectedProducts(selectedProducts.filter((id) => id !== productId));
+      setSelectAll(false);
+    }
+  };
+
+  // Update select all when individual selections change
+  useEffect(() => {
+    if (paginatedProducts.length > 0) {
+      const allSelected = paginatedProducts.every((p) =>
+        selectedProducts.includes(p.id)
+      );
+      setSelectAll(allSelected);
+    }
+  }, [selectedProducts, paginatedProducts]);
+
+  // Bulk actions
+  const handleBulkActivate = () => {
+    if (selectedProducts.length === 0) {
+      toast.error('Hech qanday mahsulot tanlanmagan');
+      return;
+    }
+    toast.success(`${selectedProducts.length} ta mahsulot faollashtirildi`);
+    setSelectedProducts([]);
+    setSelectAll(false);
+  };
+
+  const handleBulkDeactivate = () => {
+    if (selectedProducts.length === 0) {
+      toast.error('Hech qanday mahsulot tanlanmagan');
+      return;
+    }
+    toast.success(`${selectedProducts.length} ta mahsulot yashirildi`);
+    setSelectedProducts([]);
+    setSelectAll(false);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedProducts.length === 0) {
+      toast.error('Hech qanday mahsulot tanlanmagan');
+      return;
+    }
+    if (
+      window.confirm(
+        `${selectedProducts.length} ta mahsulotni o'chirishni xohlaysizmi?`
+      )
+    ) {
+      toast.success(`${selectedProducts.length} ta mahsulot o'chirildi`);
+      setSelectedProducts([]);
+      setSelectAll(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [
+        ['Name', 'SKU', 'Category', 'Price', 'Stock', 'Status'].join(','),
+        ...filteredAndSortedProducts.map((p) =>
+          [
+            p.name,
+            p.sku,
+            p.category,
+            p.price,
+            p.stock,
+            p.status,
+          ].join(',')
+        ),
+      ].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'products.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV fayl yuklab olindi');
+  };
+
+  const handleUpdatePricePercent = () => {
+    if (!pricePercent || isNaN(pricePercent)) {
+      toast.error('Foizni to\'g\'ri kiriting');
+      return;
+    }
+    if (selectedProducts.length === 0) {
+      toast.error('Hech qanday mahsulot tanlanmagan');
+      return;
+    }
+    toast.success(
+      `${selectedProducts.length} ta mahsulot narxi ${pricePercent}% ga o'zgartirildi`
+    );
+    setUpdatePriceDialogOpen(false);
+    setPricePercent('');
+    setSelectedProducts([]);
+    setSelectAll(false);
   };
 
   const handleView = (productId) => {
@@ -58,157 +309,367 @@ function Products() {
     console.log('View product:', productId);
   };
 
-  const handleDelete = async (productId) => {
+  const handleEdit = (productId) => {
+    // navigate(`/dashboard/edit-product/${productId}`);
+    console.log('Edit product:', productId);
+  };
+
+  const handleDelete = (productId) => {
     if (window.confirm("Bu mahsulotni o'chirishni xohlaysizmi?")) {
-      setDeletingId(productId);
-      try {
-        // await removeProduct(productId);
-        console.log('Delete product:', productId);
-      } catch (error) {
-        console.error('Error deleting product:', error);
-      } finally {
-        setDeletingId(null);
-      }
+      toast.success('Mahsulot o\'chirildi');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin mr-2" />
-        <span className="text-gray-500">Mahsulotlar yuklanmoqda...</span>
-      </div>
+  const getStatusBadge = (status) => {
+    return status === 'active' ? (
+      <Badge variant="default" className="flex items-center gap-1 w-fit">
+        <CheckCircle2 className="w-3 h-3" />
+        Faol
+      </Badge>
+    ) : (
+      <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+        <XCircle className="w-3 h-3" />
+        Yashirilgan
+      </Badge>
     );
-  }
+  };
+
+  const getCategories = () => {
+    return [...new Set(fakeProducts.map((p) => p.category))];
+  };
 
   return (
     <div className="space-y-4 my-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Mahsulotlar ro'yxati
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Mahsulotlar</h2>
           <p className="text-muted-foreground">
-            Tizimga yangi mahsulot qo'shish uchun "Mahsulot qo'shish" tugmasini
-            bosing.
+            Barcha mahsulotlarni ko'rib chiqing va boshqaring
           </p>
         </div>
-        <Button
-          onClick={handleCreateNew}
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
+        <Button onClick={() => console.log('Create new')} size="sm">
+          <Plus className="h-4 w-4 mr-2" />
           Yangi mahsulot
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Mahsulotlarni qidirish..."
-          className="pl-10"
-        />
+      {/* Filters */}
+      <div className="space-y-4 gap-4">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Nom yoki SKU bo'yicha qidirish..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Status Filter */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Holat" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha holatlar</SelectItem>
+              <SelectItem value="active">Faol</SelectItem>
+              <SelectItem value="hidden">Yashirilgan</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Category Filter */}
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Kategoriya" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha kategoriyalar</SelectItem>
+              {getCategories().map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sort */}
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Eng yangilari</SelectItem>
+              <SelectItem value="name">Nom bo'yicha</SelectItem>
+              <SelectItem value="price_low">Narx (pastdan yuqoriga)</SelectItem>
+              <SelectItem value="price_high">Narx (yuqoridan pastga)</SelectItem>
+            </SelectContent>
+          </Select>
+          {/* Export Button */}
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              CSV Export
+            </Button>
+          </div>
+
+        </div>
       </div>
 
-      {products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-muted/50 border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow transition-all duration-300"
+      {/* Bulk Actions */}
+      {selectedProducts.length > 0 && (
+        <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+          <span className="text-sm font-medium">
+            {selectedProducts.length} ta tanlangan
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkActivate}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Apple className="h-5 w-5 text-green-600" />
-                  <span className="font-semibold text-lg">{product.name}</span>
-                </div>
-                <Badge
-                  variant={
-                    product.status === 'active' ? 'default' : 'secondary'
-                  }
-                >
-                  {product.status === 'active' ? 'Faol' : 'Nofaol'}
-                </Badge>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Package className="h-4 w-4" />
-                  <span>Kategoriya: {product.category}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <DollarSign className="h-4 w-4" />
-                  <span>Narx: {product.price} so'm</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <ShoppingCart className="h-4 w-4" />
-                  <span>Qoldiq: {product.stock} dona</span>
-                </div>
-                {product.rating && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span>Reyting: {product.rating}/5</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-3 border-t border-border">
-                <Button
-                  size="sm"
-                  onClick={() => handleView(product.id)}
-                  className="flex-1"
-                >
-                  <Eye className="h-4 w-4 mr-1" /> Ko'rish
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(product.id)}
-                  className="flex-1"
-                >
-                  <Edit className="h-4 w-4 mr-1" /> Tahrir
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(product.id)}
-                  disabled={deletingId === product.id}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  {deletingId === product.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-8 lg:py-12 border rounded-lg bg-muted/50">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CircleOff />
-              </EmptyMedia>
-              <EmptyTitle>Hali mahsulotlar mavjud emas!</EmptyTitle>
-              <EmptyDescription>
-                Yangi mahsulot qo'shish uchun "Mahsulot qo'shish" tugmasini
-                bosing.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={handleCreateNew} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Mahsulot qo'shish
-              </Button>
-            </EmptyContent>
-          </Empty>
+              <CheckCircle2 className="w-4 h-4 mr-1" />
+              Faollashtirish
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkDeactivate}
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Yashirish
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              O'chirish
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUpdatePriceDialogOpen(true)}
+            >
+              <Percent className="w-4 h-4 mr-1" />
+              Narxni o'zgartirish
+            </Button>
+          </div>
         </div>
       )}
+      {/* Table */}
+      <div>
+        {paginatedProducts.length > 0 ? (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectAll}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>Thumbnail</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock/Availability</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Amal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedProducts.includes(product.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectProduct(product.id, checked)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                        {product.thumbnail ? (
+                          <img
+                            src={product.thumbnail}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="w-full h-full items-center justify-center hidden"
+                          style={{ display: product.thumbnail ? 'none' : 'flex' }}
+                        >
+                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {product.sku}
+                    </TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>
+                      <span className="font-semibold">
+                        {formatNumber(product.price)} so'm
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={
+                          product.stock > 0
+                            ? 'text-green-600 font-medium'
+                            : 'text-red-600 font-medium'
+                        }
+                      >
+                        {product.stock > 0
+                          ? `${product.stock} dona`
+                          : 'Mavjud emas'}
+                      </span>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(product.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleView(product.id)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ko'rish
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(product.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Tahrir
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            Hech qanday mahsulot topilmadi
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {filteredAndSortedProducts.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Sahifada ko'rsatish:
+            </span>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={handleItemsPerPageChange}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="40">40</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-muted-foreground">
+              {startIndex + 1}-{Math.min(endIndex, filteredAndSortedProducts.length)} dan{' '}
+              {filteredAndSortedProducts.length} ta
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Oldingi
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Sahifa {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Keyingi
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Update Price Dialog */}
+      <Dialog open={updatePriceDialogOpen} onOpenChange={setUpdatePriceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Narxni foiz bo'yicha o'zgartirish</DialogTitle>
+            <DialogDescription>
+              Tanlangan mahsulotlarning narxini foiz bo'yicha o'zgartiring
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="price-percent">Foiz (%)</Label>
+              <Input
+                id="price-percent"
+                type="number"
+                placeholder="Masalan: 10 (10% qo'shish) yoki -5 (5% kamaytirish)"
+                value={pricePercent}
+                onChange={(e) => setPricePercent(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setUpdatePriceDialogOpen(false);
+                setPricePercent('');
+              }}
+            >
+              Bekor qilish
+            </Button>
+            <Button onClick={handleUpdatePricePercent}>
+              O'zgartirish
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
