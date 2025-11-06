@@ -17,6 +17,12 @@ import Couriers from './Couriers';
 import Users from './Users';
 import Marketing from './Marketing';
 import Analytics from './Analytics';
+import Catalog from './Catalog';
+import Finance from './Finance';
+import Promotions from './Promotions';
+import Reviews from './Reviews';
+import ActivityLog from './ActivityLog';
+import Help from './Help';
 import Signin from './Signin';
 import Signup from './Signup';
 import ForgotPassword from './ForgotPassword';
@@ -57,13 +63,14 @@ function Dashboard() {
         >
           <Route index element={<MainPage />} />
           <Route path="orders" element={<Orders />} />
-          <Route path="stores" element={<Stores />} />
           <Route path="products" element={<Products />} />
-          <Route path="couriers" element={<Couriers />} />
-          <Route path="users" element={<Users />} />
-          <Route path="marketing" element={<Marketing />} />
-          <Route path="analytics" element={<Analytics />} />
+          <Route path="catalog" element={<Catalog />} />
+          <Route path="finance" element={<Finance />} />
+          <Route path="promotions" element={<Promotions />} />
+          <Route path="reviews" element={<Reviews />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="activity-log" element={<ActivityLog />} />
+          <Route path="help" element={<Help />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

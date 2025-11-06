@@ -15,6 +15,13 @@ import {
   ChartPie,
   Search,
   Slash,
+  Package,
+  FolderTree,
+  DollarSign,
+  Tag,
+  Star,
+  History,
+  HelpCircle,
 } from 'lucide-react';
 
 import {
@@ -47,39 +54,49 @@ export function AppSidebar({ ...props }) {
       icon: LayoutDashboard,
     },
     {
-      title: "Do'konlar",
-      url: '/dashboard/stores',
-      icon: Store,
-    },
-    {
-      title: 'Buyurtmalar',
+      title: 'Orders',
       url: '/dashboard/orders',
       icon: ClipboardList,
     },
     {
-      title: 'Tovarlar',
+      title: 'Products',
       url: '/dashboard/products',
-      icon: Apple,
+      icon: Package,
     },
     {
-      title: 'Kuryerlar',
-      url: '/dashboard/couriers',
-      icon: Truck,
+      title: 'Catalog (Categories)',
+      url: '/dashboard/catalog',
+      icon: FolderTree,
     },
     {
-      title: 'Foydalanuvchilar',
-      url: '/dashboard/users',
-      icon: Users2,
+      title: 'Finance',
+      url: '/dashboard/finance',
+      icon: DollarSign,
     },
     {
-      title: 'Marketing',
-      url: '/dashboard/marketing',
-      icon: Target,
+      title: 'Promotions',
+      url: '/dashboard/promotions',
+      icon: Tag,
     },
     {
-      title: 'Analitika & Hisobotlar',
-      url: '/dashboard/analytics',
-      icon: ChartPie,
+      title: 'Reviews',
+      url: '/dashboard/reviews',
+      icon: Star,
+    },
+    {
+      title: 'Settings',
+      url: '/dashboard/settings',
+      icon: Settings,
+    },
+    {
+      title: 'Activity Log',
+      url: '/dashboard/activity-log',
+      icon: History,
+    },
+    {
+      title: 'Help',
+      url: '/dashboard/help',
+      icon: HelpCircle,
     },
   ];
 
@@ -102,7 +119,7 @@ export function AppSidebar({ ...props }) {
         <SidebarGroup className="space-y-0.5">
           <SearchCommandDialog />
           <SidebarGroupLabel className="hidden group-data-[collapsible=icon]:hidden">
-            Asosiy bo'limlar
+            Main Menu
           </SidebarGroupLabel>
           {navItems.map((item, i) => {
             let isActive = false;
