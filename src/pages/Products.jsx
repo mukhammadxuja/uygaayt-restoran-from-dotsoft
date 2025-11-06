@@ -44,6 +44,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { formatNumber } from '@/lib/utils';
 import { toast } from 'sonner';
+import ProductForm from '@/components/dashboard/dialogs/ProductForm';
 
 // Fake data generator
 const generateFakeProducts = () => {
@@ -118,6 +119,8 @@ function Products() {
   // Dialogs
   const [updatePriceDialogOpen, setUpdatePriceDialogOpen] = useState(false);
   const [pricePercent, setPricePercent] = useState('');
+  const [productFormOpen, setProductFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
@@ -310,8 +313,26 @@ function Products() {
   };
 
   const handleEdit = (productId) => {
-    // navigate(`/dashboard/edit-product/${productId}`);
-    console.log('Edit product:', productId);
+    const product = fakeProducts.find((p) => p.id === productId);
+    if (product) {
+      setEditingProduct(product);
+      setProductFormOpen(true);
+    }
+  };
+
+  const handleCreateNew = () => {
+    setEditingProduct(null);
+    setProductFormOpen(true);
+  };
+
+  const handleSaveProduct = async (productData) => {
+    // In a real app, this would save to Firebase/database
+    console.log('Saving product:', productData);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    toast.success(editingProduct ? 'Mahsulot yangilandi' : 'Mahsulot yaratildi');
+    setProductFormOpen(false);
+    setEditingProduct(null);
   };
 
   const handleDelete = (productId) => {
@@ -347,7 +368,7 @@ function Products() {
             Barcha mahsulotlarni ko'rib chiqing va boshqaring
           </p>
         </div>
-        <Button onClick={() => console.log('Create new')} size="sm">
+        <Button onClick={handleCreateNew} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Yangi mahsulot
         </Button>
@@ -670,6 +691,19 @@ function Products() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Product Form Sheet */}
+      <ProductForm
+        open={productFormOpen}
+        onOpenChange={(open) => {
+          setProductFormOpen(open);
+          if (!open) {
+            setEditingProduct(null);
+          }
+        }}
+        product={editingProduct}
+        onSave={handleSaveProduct}
+      />
     </div>
   );
 }
