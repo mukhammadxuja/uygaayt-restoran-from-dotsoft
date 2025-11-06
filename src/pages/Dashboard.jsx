@@ -11,6 +11,7 @@ import {
   Routes,
 } from 'react-router-dom';
 import Orders from './Orders';
+import OrderDetail from './OrderDetail';
 import Stores from './Stores';
 import Products from './Products';
 import Couriers from './Couriers';
@@ -63,6 +64,7 @@ function Dashboard() {
         >
           <Route index element={<MainPage />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="order-detail/:orderId" element={<OrderDetail />} />
           <Route path="products" element={<Products />} />
           <Route path="catalog" element={<Catalog />} />
           <Route path="finance" element={<Finance />} />
