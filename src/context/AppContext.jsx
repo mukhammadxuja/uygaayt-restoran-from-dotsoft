@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { DEV_MODE_BYPASS_AUTH } from '@/config/dev';
 import {
   doc,
   getDoc,
@@ -34,12 +35,24 @@ export const AppContextProvider = ({ children }) => {
 
   useEffect(() => {
     setLoading(true);
+    
+    // In development mode, skip authentication
+    if (DEV_MODE_BYPASS_AUTH) {
+      // Set a mock user for development
+      setUser({ uid: 'dev-user', email: 'dev@example.com' });
+      setUserUid('dev-user');
+      setLoading(false);
+      return;
+    }
+
+    // Normal authentication flow for production
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
         setUserUid(auth.currentUser.uid);
       } else {
         setUser(null);
+        setUserUid(null);
       }
       setLoading(false);
     });

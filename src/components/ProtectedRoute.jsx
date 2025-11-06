@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/firebase';
 import { Loader } from 'lucide-react';
+import { DEV_MODE_BYPASS_AUTH } from '@/config/dev';
 
 const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -10,6 +11,14 @@ const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // In development mode, bypass authentication check
+    if (DEV_MODE_BYPASS_AUTH) {
+      setIsAuthenticated(true);
+      setLoading(false);
+      return;
+    }
+
+    // Normal authentication flow for production
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsAuthenticated(true);
@@ -28,6 +37,11 @@ const ProtectedRoute = ({ children }) => {
         <Loader className="w-6 h-6 animate-spin" />
       </div>
     );
+  }
+
+  // In development mode, always allow access
+  if (DEV_MODE_BYPASS_AUTH) {
+    return children;
   }
 
   if (!isAuthenticated) {

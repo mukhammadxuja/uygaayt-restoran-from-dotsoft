@@ -3,6 +3,7 @@ import SettingsPage from '@/components/dashboard/settings/Settings';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { auth } from '@/firebase';
+import { DEV_MODE_BYPASS_AUTH } from '@/config/dev';
 import {
   Navigate,
   Route,
@@ -22,7 +23,7 @@ import ForgotPassword from './ForgotPassword';
 import NotFound from './NotFound';
 
 function Dashboard() {
-  // yarn vite --host 127.0.0.1 --port 3000
+// yarn vite --host 127.0.0.1 --port 3000
 
   return (
     <Router>
@@ -31,7 +32,13 @@ function Dashboard() {
           path="/"
           element={
             <Navigate
-              to={auth.currentUser ? '/dashboard' : '/signin'}
+              to={
+                DEV_MODE_BYPASS_AUTH
+                  ? '/dashboard'
+                  : auth.currentUser
+                    ? '/dashboard'
+                    : '/signin'
+              }
               replace
             />
           }
