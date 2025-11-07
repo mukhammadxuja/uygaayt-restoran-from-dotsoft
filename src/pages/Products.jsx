@@ -387,14 +387,12 @@ function Products() {
     localStorage.setItem('lowStockEnabled', settings.enabled.toString());
   };
 
-  // Get low stock products
   const lowStockProducts = useMemo(() => {
     return fakeProducts.filter(
       (product) => product.stock !== undefined && product.stock <= lowStockThreshold
     );
   }, [fakeProducts, lowStockThreshold]);
 
-  // Load low stock threshold from localStorage
   useEffect(() => {
     const savedThreshold = localStorage.getItem('lowStockThreshold');
     const savedEnabled = localStorage.getItem('lowStockEnabled');
@@ -431,8 +429,8 @@ function Products() {
     <div className="space-y-4 my-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Mahsulotlar</h2>
-          <p className="text-muted-foreground">
+          <h2 className="title">Mahsulotlar</h2>
+          <p className="paragraph">
             Barcha mahsulotlarni ko'rib chiqing va boshqaring
           </p>
         </div>

@@ -70,6 +70,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .title {
+    @apply text-xl xl:text-2xl font-bold tracking-tight;
+  }
+  .paragraph {
+    @apply text-sm xl:text-base text-muted-foreground;
+  }
 }
 
 body {
