@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,11 +10,17 @@ import {
   Eye,
   Phone,
   Search,
-  Filter,
-  ArrowUpDown,
-  Calendar,
   ChevronLeft,
   ChevronRight,
+  MoreVertical,
+  Calendar,
+  DollarSign,
+  CreditCard,
+  Truck,
+  Package,
+  Download,
+  List,
+  Grid3x3,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -34,15 +38,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatNumber, formatDate } from '@/lib/utils';
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 // Fake data
 const generateFakeOrders = () => {
@@ -96,9 +108,235 @@ const generateFakeOrders = () => {
   return orders;
 };
 
+// Status Badge Component
+const StatusBadge = ({ status }) => {
+  const statusConfig = {
+    pending: { label: 'Kutilmoqda', variant: 'secondary' },
+    processing: { label: 'Jarayonda', variant: 'default' },
+    completed: { label: 'Tugallangan', variant: 'default' },
+    cancelled: { label: 'Bekor qilingan', variant: 'destructive' },
+  };
+
+  const config = statusConfig[status] || statusConfig.pending;
+  return (
+    <Badge variant={config.variant} className="text-xs">
+      {config.label}
+    </Badge>
+  );
+};
+
+// Order Card Component (Mobile)
+const OrderCard = ({ order, onView, onContact }) => {
+  const getPaymentTypeLabel = (type) => {
+    const labels = {
+      cash: 'Naqd',
+      card: 'Karta',
+      online: 'Online',
+    };
+    return labels[type] || type;
+  };
+
+  const getDeliveryTypeLabel = (type) => {
+    const labels = {
+      pickup: 'Olib ketish',
+      delivery: 'Yetkazib berish',
+    };
+    return labels[type] || type;
+  };
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4 space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono font-semibold text-sm">
+                {order.id}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-sm">{order.clientName}</p>
+              <p className="text-xs text-muted-foreground">{order.phone}</p>
+            </div>
+          </div>
+          <StatusBadge status={order.status} />
+        </div>
+
+        {/* Details */}
+        <div className="space-y-2 py-2 border-t">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              Summa:
+            </span>
+            <span className="font-semibold">
+              {formatNumber(order.amount)} so'm
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <CreditCard className="h-3 w-3" />
+              To'lov:
+            </span>
+            <span className="font-medium">
+              {getPaymentTypeLabel(order.paymentType)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Truck className="h-3 w-3" />
+              Yetkazib berish:
+            </span>
+            <span className="font-medium">
+              {getDeliveryTypeLabel(order.deliveryType)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              Vaqt:
+            </span>
+            <span className="font-medium text-xs">
+              {order.createdAt instanceof Date
+                ? formatDate(order.createdAt.getTime())
+                : formatDate(order.createdAt)}
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onView(order.id)}
+            className="flex-1 text-xs"
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            Ko'rish
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onContact(order.phone)}
+            className="flex-1 text-xs"
+          >
+            <Phone className="h-3 w-3 mr-1" />
+            Qo'ng'iroq
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Order Table Row Component
+const OrderTableRow = ({ order, isMobile, onView, onContact }) => {
+  const getPaymentTypeLabel = (type) => {
+    const labels = {
+      cash: 'Naqd',
+      card: 'Karta',
+      online: 'Online',
+    };
+    return labels[type] || type;
+  };
+
+  const getDeliveryTypeLabel = (type) => {
+    const labels = {
+      pickup: 'Olib ketish',
+      delivery: 'Yetkazib berish',
+    };
+    return labels[type] || type;
+  };
+
+  return (
+    <TableRow className="hover:bg-muted/50">
+      <TableCell className="font-mono font-medium text-xs sm:text-sm">
+        <div className="truncate">{order.id}</div>
+      </TableCell>
+      <TableCell>
+        <div className="min-w-0">
+          <div className="font-medium text-sm sm:text-base truncate">
+            {order.clientName}
+          </div>
+          <div className="text-xs sm:text-sm text-muted-foreground truncate">
+            {order.phone}
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <span className="font-semibold text-sm sm:text-base truncate block">
+          {formatNumber(order.amount)} so'm
+        </span>
+      </TableCell>
+      <TableCell className="hidden md:table-cell text-sm">
+        <div className="truncate">{getPaymentTypeLabel(order.paymentType)}</div>
+      </TableCell>
+      <TableCell className="hidden lg:table-cell text-sm">
+        <div className="truncate">{getDeliveryTypeLabel(order.deliveryType)}</div>
+      </TableCell>
+      <TableCell>
+        <StatusBadge status={order.status} />
+      </TableCell>
+      <TableCell className="hidden md:table-cell text-xs sm:text-sm">
+        <div className="truncate">
+          {order.createdAt instanceof Date
+            ? formatDate(order.createdAt.getTime())
+            : formatDate(order.createdAt)}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        {isMobile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
+                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onView(order.id)}>
+                <Eye className="h-4 w-4" />
+                Ko'rish
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onContact(order.phone)}>
+                <Phone className="h-4 w-4" />
+                Qo'ng'iroq
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="flex items-center justify-end gap-1 sm:gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onView(order.id)}
+              className="h-7 w-7 sm:h-8 sm:w-auto px-2 sm:px-3"
+            >
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              {/* <span className="hidden sm:inline text-xs sm:text-sm">Ko'rish</span> */}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onContact(order.phone)}
+              className="h-7 w-7 sm:h-8 sm:w-auto px-2 sm:px-3"
+            >
+              <Phone className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              {/* <span className="hidden sm:inline text-xs sm:text-sm">Qo'ng'iroq</span> */}
+            </Button>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+};
+
 function Orders() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [fakeOrders] = useState(generateFakeOrders());
+  const [viewMode, setViewMode] = useState('table'); // Default to table/list view
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -107,6 +345,7 @@ function Orders() {
   const [deliveryTypeFilter, setDeliveryTypeFilter] = useState('all');
   const [periodFilter, setPeriodFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Pagination states
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -221,235 +460,260 @@ function Orders() {
     window.open(`tel:${phone}`, '_self');
   };
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { label: 'Kutilmoqda', variant: 'secondary' },
-      processing: { label: 'Jarayonda', variant: 'default' },
-      completed: { label: 'Tugallangan', variant: 'default' },
-      cancelled: { label: 'Bekor qilingan', variant: 'destructive' },
-    };
+  const handleExportCSV = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [
+        ['Order ID', 'Mijoz ismi', 'Telefon', 'Summa', 'To\'lov turi', 'Yetkazib berish', 'Holat', 'Sana'].join(','),
+        ...filteredAndSortedOrders.map((order) =>
+          [
+            order.id,
+            order.clientName,
+            order.phone,
+            order.amount,
+            order.paymentType,
+            order.deliveryType,
+            order.status,
+            order.createdAt instanceof Date
+              ? formatDate(order.createdAt.getTime())
+              : formatDate(order.createdAt),
+          ].join(',')
+        ),
+      ].join('\n');
 
-    const config = statusConfig[status] || statusConfig.pending;
-    return (
-      <Badge variant={config.variant} className="capitalize">
-        {config.label}
-      </Badge>
-    );
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'orders.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV fayl yuklab olindi');
   };
 
-  const getPaymentTypeLabel = (type) => {
-    const labels = {
-      cash: 'Naqd',
-      card: 'Karta',
-      online: 'Online',
-    };
-    return labels[type] || type;
-  };
+  // Auto set view mode based on screen size
+  useEffect(() => {
+    if (isMobile) {
+      setViewMode('card');
+    }
+  }, [isMobile]);
 
-  const getDeliveryTypeLabel = (type) => {
-    const labels = {
-      pickup: 'Olib ketish',
-      delivery: 'Yetkazib berish',
-    };
-    return labels[type] || type;
-  };
+  const hasActiveFilters =
+    statusFilter !== 'all' ||
+    paymentTypeFilter !== 'all' ||
+    deliveryTypeFilter !== 'all' ||
+    periodFilter !== 'all';
 
   return (
-    <div className="space-y-4 my-2">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-4 py-2 sm:py-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Buyurtmalar</h2>
-          <p className="text-muted-foreground">
+          <h2 className="title">Buyurtmalar</h2>
+          <p className="paragraph">
             Barcha buyurtmalarni ko'rib chiqing va boshqaring
           </p>
         </div>
       </div>
 
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="ID, telefon yoki ism bo'yicha qidirish..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 text-sm sm:text-base"
+        />
+      </div>
+
       {/* Filters */}
+      <div className="space-y-3">
+        {isMobile ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="w-full"
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Filtrlar {hasActiveFilters && `(${[
+              statusFilter !== 'all' ? 1 : 0,
+              paymentTypeFilter !== 'all' ? 1 : 0,
+              deliveryTypeFilter !== 'all' ? 1 : 0,
+              periodFilter !== 'all' ? 1 : 0,
+            ].reduce((a, b) => a + b, 0)})`}
+          </Button>
+        ) : null}
 
-      <div className="space-y-4 gap-4">
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="ID, telefon yoki ism bo'yicha qidirish..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        {(!isMobile || filtersOpen) && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Holat" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha holatlar</SelectItem>
+                <SelectItem value="pending">Kutilmoqda</SelectItem>
+                <SelectItem value="processing">Jarayonda</SelectItem>
+                <SelectItem value="completed">Tugallangan</SelectItem>
+                <SelectItem value="cancelled">Bekor qilingan</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <div className="flex items-center gap-2">
-          {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Holat" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha holatlar</SelectItem>
-              <SelectItem value="pending">Kutilmoqda</SelectItem>
-              <SelectItem value="processing">Jarayonda</SelectItem>
-              <SelectItem value="completed">Tugallangan</SelectItem>
-              <SelectItem value="cancelled">Bekor qilingan</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="To'lov turi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha to'lov turlari</SelectItem>
+                <SelectItem value="cash">Naqd</SelectItem>
+                <SelectItem value="card">Karta</SelectItem>
+                <SelectItem value="online">Online</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Payment Type Filter */}
-          <Select value={paymentTypeFilter} onValueChange={setPaymentTypeFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="To'lov turi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha to'lov turlari</SelectItem>
-              <SelectItem value="cash">Naqd</SelectItem>
-              <SelectItem value="card">Karta</SelectItem>
-              <SelectItem value="online">Online</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={deliveryTypeFilter} onValueChange={setDeliveryTypeFilter}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Yetkazib berish" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha</SelectItem>
+                <SelectItem value="pickup">Olib ketish</SelectItem>
+                <SelectItem value="delivery">Yetkazib berish</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Delivery Type Filter */}
-          <Select value={deliveryTypeFilter} onValueChange={setDeliveryTypeFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Yetkazib berish" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha</SelectItem>
-              <SelectItem value="pickup">Olib ketish</SelectItem>
-              <SelectItem value="delivery">Yetkazib berish</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={periodFilter} onValueChange={setPeriodFilter}>
+              <SelectTrigger className="w-full sm:w-[140px]">
+                <SelectValue placeholder="Davr" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha vaqt</SelectItem>
+                <SelectItem value="today">Bugun</SelectItem>
+                <SelectItem value="week">Oxirgi hafta</SelectItem>
+                <SelectItem value="month">Oxirgi oy</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Period Filter */}
-          <Select value={periodFilter} onValueChange={setPeriodFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Davr" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha vaqt</SelectItem>
-              <SelectItem value="today">Bugun</SelectItem>
-              <SelectItem value="week">Oxirgi hafta</SelectItem>
-              <SelectItem value="month">Oxirgi oy</SelectItem>
-            </SelectContent>
-          </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Eng yangilari</SelectItem>
+                <SelectItem value="highest">Eng yuqori summa</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Eng yangilari</SelectItem>
-              <SelectItem value="highest">Eng yuqori summa</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            {!isMobile && (
+              <Button variant="outline" size="sm" onClick={handleExportCSV} className="ml-auto">
+                <Download className="w-4 h-4 mr-2" />
+                CSV Export
+              </Button>
+            )}
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'card' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('card')}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
 
-      {/* Table */}
-      <div>
-        {/* <h3 className="text-lg font-bold tracking-tight mb-4">Buyurtmalar ro'yxati</h3> */}
-        {filteredAndSortedOrders.length > 0 ? (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Mijoz ismi</TableHead>
-                  <TableHead>Summa</TableHead>
-                  <TableHead>To'lov turi</TableHead>
-                  <TableHead>Yetkazib berish</TableHead>
-                  <TableHead>Holat</TableHead>
-                  <TableHead>Vaqt</TableHead>
-                  <TableHead className="text-right">Amal</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{order.clientName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {order.phone}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-semibold">
-                        {formatNumber(order.amount)} so'm
-                      </span>
-                    </TableCell>
-                    <TableCell>{getPaymentTypeLabel(order.paymentType)}</TableCell>
-                    <TableCell>
-                      {getDeliveryTypeLabel(order.deliveryType)}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell>
-                      {order.createdAt instanceof Date
-                        ? formatDate(order.createdAt.getTime())
-                        : formatDate(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleView(order.id)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Ko'rish
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleContact(order.phone)}
-                        >
-                          <Phone className="h-4 w-4 mr-1" />
-                          Contact
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      {/* Orders List */}
+      {filteredAndSortedOrders.length > 0 ? (
+        viewMode === 'card' || isMobile ? (
+          // Card View (Mobile or Desktop Card Mode)
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {paginatedOrders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onView={handleView}
+                onContact={handleContact}
+              />
+            ))}
           </div>
         ) : (
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Search className="h-6 w-6" />
-              </EmptyMedia>
-              <EmptyTitle>
-                {searchTerm || statusFilter !== 'all' || paymentTypeFilter !== 'all' || deliveryTypeFilter !== 'all' || periodFilter !== 'all'
-                  ? 'Buyurtma topilmadi'
-                  : 'Hech qanday buyurtma yo\'q'}
-              </EmptyTitle>
-              <EmptyDescription>
-                {searchTerm || statusFilter !== 'all' || paymentTypeFilter !== 'all' || deliveryTypeFilter !== 'all' || periodFilter !== 'all'
-                  ? 'Qidiruv yoki filtrlash natijasiga mos buyurtma topilmadi. Boshqa qidiruv so\'zlarini yoki filtrlarni sinab ko\'ring.'
-                  : 'Hali hech qanday buyurtma qo\'shilmagan. Yangi buyurtmalar shu yerda ko\'rinadi.'}
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-      </div>
+          // Table View (Desktop List Mode - Default)
+          <Card className="overflow-hidden">
+            <CardContent className="p-0 ">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[120px] whitespace-nowrap">Order ID</TableHead>
+                    <TableHead className="w-[180px] whitespace-nowrap">Mijoz ismi</TableHead>
+                    <TableHead className="hidden sm:table-cell w-[120px] whitespace-nowrap">Summa</TableHead>
+                    <TableHead className="hidden md:table-cell w-[110px] whitespace-nowrap">To'lov turi</TableHead>
+                    <TableHead className="hidden lg:table-cell w-[130px] whitespace-nowrap">Yetkazib berish</TableHead>
+                    <TableHead className="w-[110px] whitespace-nowrap">Holat</TableHead>
+                    <TableHead className="hidden md:table-cell w-[130px] whitespace-nowrap">Vaqt</TableHead>
+                    <TableHead className="text-right w-[140px] whitespace-nowrap">Amal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedOrders.map((order) => (
+                    <OrderTableRow
+                      key={order.id}
+                      order={order}
+                      isMobile={isMobile}
+                      onView={handleView}
+                      onContact={handleContact}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )
+      ) : (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Search className="h-6 w-6" />
+            </EmptyMedia>
+            <EmptyTitle>
+              {searchTerm || hasActiveFilters
+                ? 'Buyurtma topilmadi'
+                : 'Hech qanday buyurtma yo\'q'}
+            </EmptyTitle>
+            <EmptyDescription>
+              {searchTerm || hasActiveFilters
+                ? 'Qidiruv yoki filtrlash natijasiga mos buyurtma topilmadi. Boshqa qidiruv so\'zlarini yoki filtrlarni sinab ko\'ring.'
+                : 'Hali hech qanday buyurtma qo\'shilmagan. Yangi buyurtmalar shu yerda ko\'rinadi.'}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
 
       {/* Pagination */}
       {filteredAndSortedOrders.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+            <span className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               Sahifada ko'rsatish:
             </span>
             <Select
               value={itemsPerPage.toString()}
               onValueChange={handleItemsPerPageChange}
             >
-              <SelectTrigger className="w-[100px]">
+              <SelectTrigger className="w-full sm:w-[100px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -460,32 +724,34 @@ function Orders() {
                 <SelectItem value="50">50</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               {startIndex + 1}-{Math.min(endIndex, filteredAndSortedOrders.length)} dan{' '}
               {filteredAndSortedOrders.length} ta
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              className="flex-1 sm:flex-initial"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Oldingi
+              <span className="text-xs sm:text-sm">Oldingi</span>
             </Button>
-            <span className="text-sm text-muted-foreground">
-              Sahifa {currentPage} / {totalPages}
+            <span className="text-xs sm:text-sm text-muted-foreground px-2">
+              {currentPage} / {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="flex-1 sm:flex-initial"
             >
-              Keyingi
+              <span className="text-xs sm:text-sm">Keyingi</span>
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
