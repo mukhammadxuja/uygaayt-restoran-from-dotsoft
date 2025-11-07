@@ -23,6 +23,7 @@ function Appearance() {
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
+    localStorage.setItem('i18nextLng', lng);
   };
 
   const handleFontChange = (value) => {
@@ -240,15 +241,15 @@ function Appearance() {
         </div>
         <Select
           onValueChange={changeLanguage}
-          value={i18n.language}
-          defaultValue="en"
+          value={i18n.language || 'uz'}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder={t('languagesTitle')} />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="uz">O'zbek</SelectItem>
+            <SelectItem value="ru">Russkie</SelectItem>
             <SelectItem value="en">English</SelectItem>
-            <SelectItem value="de">German</SelectItem>
           </SelectContent>
         </Select>
       </div>

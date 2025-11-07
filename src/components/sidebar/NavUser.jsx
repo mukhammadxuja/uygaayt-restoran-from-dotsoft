@@ -6,6 +6,7 @@ import {
   Moon,
   Monitor,
   SunMoon,
+  Languages,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,7 +40,7 @@ import { useTheme } from '@/provider/ThemeProvider';
 export function NavUser() {
   const { isMobile, state } = useSidebar();
   const { userData, user } = useAppContext();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { setTheme } = useTheme();
 
@@ -50,6 +51,11 @@ export function NavUser() {
     } catch (error) {
       console.error('Error signing out:', error.message);
     }
+  };
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('i18nextLng', lng);
   };
 
   return (
@@ -143,6 +149,34 @@ export function NavUser() {
                       <Monitor className="mr-2 h-4 w-4" />
                       <span>Sistema</span>
                       <DropdownMenuShortcut>⌘G</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Languages className="mr-2 h-4 w-4" />
+                  <span>{t('language')}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="w-40">
+                    <DropdownMenuItem onClick={() => changeLanguage('uz')}>
+                      <span>O'zbek</span>
+                      {i18n.language === 'uz' && (
+                        <DropdownMenuShortcut>✓</DropdownMenuShortcut>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeLanguage('ru')}>
+                      <span>Russkie</span>
+                      {i18n.language === 'ru' && (
+                        <DropdownMenuShortcut>✓</DropdownMenuShortcut>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                      <span>English</span>
+                      {i18n.language === 'en' && (
+                        <DropdownMenuShortcut>✓</DropdownMenuShortcut>
+                      )}
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>

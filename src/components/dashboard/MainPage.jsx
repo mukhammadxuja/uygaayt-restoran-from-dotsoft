@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/table';
 import { formatNumber, formatDate } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTranslation } from 'react-i18next';
 
 // Mock data generator
 const generateFakeOrders = () => {
@@ -88,6 +89,7 @@ const generateChartData = (days) => {
 function AdminDashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
   const [chartPeriod, setChartPeriod] = useState('7');
 
   // Mock orders data
@@ -127,11 +129,11 @@ function AdminDashboard() {
 
   const getStatusBadge = (status) => {
     const configs = {
-      pending: { label: 'Kutilmoqda', variant: 'secondary' },
-      accepted: { label: 'Qabul qilindi', variant: 'default' },
-      preparing: { label: 'Tayyorlanmoqda', variant: 'default' },
-      ready: { label: 'Tayyor', variant: 'default' },
-      delivered: { label: 'Yetkazilgan', variant: 'default' },
+      pending: { label: t('pending'), variant: 'secondary' },
+      accepted: { label: t('accepted'), variant: 'default' },
+      preparing: { label: t('preparing'), variant: 'default' },
+      ready: { label: t('ready'), variant: 'default' },
+      delivered: { label: t('delivered'), variant: 'default' },
     };
 
     const config = configs[status] || configs.pending;
@@ -160,13 +162,13 @@ function AdminDashboard() {
           </div>
           <div>
             <p className="font-medium tracking-widest text-xs uppercase text-muted-foreground/60">
-              Bugungi buyurtmalar
+              {t('todayOrders')}
             </p>
             <h3 className="text-2xl font-semibold mb-1 text-primary">
-              {stats.todayOrders} ta
+              {stats.todayOrders} {t('unit')}
             </h3>
             <p className="text-xs text-muted-foreground/60">
-              Umumiy buyurtmalar
+              {t('totalOrders')}
             </p>
           </div>
           <ArrowRight className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-6 w-6 -rotate-45 text-primary" />
@@ -182,13 +184,13 @@ function AdminDashboard() {
           </div>
           <div>
             <p className="font-medium tracking-widest text-xs uppercase text-muted-foreground/60">
-              Bugungi daromad
+              {t('todayRevenue')}
             </p>
             <h3 className="text-2xl font-semibold mb-1 text-primary">
               {formatNumber(stats.todayRevenue)} so'm
             </h3>
             <p className="text-xs text-muted-foreground/60">
-              Karta + naqd + bonus
+              {t('paymentMethods')}
             </p>
           </div>
           <ArrowRight className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-6 w-6 -rotate-45 text-primary" />
@@ -204,13 +206,13 @@ function AdminDashboard() {
           </div>
           <div>
             <p className="font-medium tracking-widest text-xs uppercase text-muted-foreground/60">
-              Yangi buyurtmalar
+              {t('newOrders')}
             </p>
             <h3 className="text-2xl font-semibold mb-1 text-primary">
-              {stats.newOrders} ta
+              {stats.newOrders} {t('unit')}
             </h3>
             <p className="text-xs text-muted-foreground/60">
-              Ochilmagan buyurtmalar
+              {t('unopenedOrders')}
             </p>
           </div>
           <ArrowRight className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-6 w-6 -rotate-45 text-primary" />
@@ -223,13 +225,13 @@ function AdminDashboard() {
           </div>
           <div>
             <p className="font-medium tracking-widest text-xs uppercase text-muted-foreground/60">
-              O'rtacha buyurtma
+              {t('averageOrder')}
             </p>
             <h3 className="text-2xl font-semibold mb-1 text-primary">
               {formatNumber(stats.averageOrderValue)} so'm
             </h3>
             <p className="text-xs text-muted-foreground/60">
-              O'rtacha qiymat
+              {t('averageValue')}
             </p>
           </div>
           <ArrowRight className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-6 w-6 -rotate-45 text-primary" />
@@ -242,9 +244,9 @@ function AdminDashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base sm:text-lg">So'nggi buyurtmalar</CardTitle>
+                <CardTitle className="text-base sm:text-lg">{t('recentOrders')}</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Eng so'nggi 5 ta buyurtma
+                  {t('last5Orders')}
                 </CardDescription>
               </div>
               <Button
@@ -253,7 +255,7 @@ function AdminDashboard() {
                 onClick={() => navigate('/dashboard/orders')}
                 className="text-xs sm:text-sm"
               >
-                Barchasi
+                {t('all')}
                 <ArrowRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
@@ -284,11 +286,11 @@ function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[120px]">ID</TableHead>
-                    <TableHead>Mijoz</TableHead>
-                    <TableHead className="text-right">Summa</TableHead>
-                    <TableHead className="w-[140px]">Holat</TableHead>
-                    <TableHead className="w-[120px] text-right">Vaqt</TableHead>
+                    <TableHead className="w-[120px]">{t('orderId')}</TableHead>
+                    <TableHead>{t('client')}</TableHead>
+                    <TableHead className="text-right">{t('amount')}</TableHead>
+                    <TableHead className="w-[140px]">{t('status')}</TableHead>
+                    <TableHead className="w-[120px] text-right">{t('time')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -322,9 +324,9 @@ function AdminDashboard() {
         {/* Tezkor amallar */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base sm:text-lg">Tezkor amallar</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t('quickActions')}</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Tez kirish tugmalari
+              {t('quickAccessButtons')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -333,7 +335,7 @@ function AdminDashboard() {
               onClick={() => navigate('/dashboard/products')}
             >
               <Plus className="mr-2 h-4 w-4" />
-              <span className="text-xs sm:text-sm">Mahsulot qo'shish</span>
+              <span className="text-xs sm:text-sm">{t('addProduct')}</span>
             </Button>
             <Button
               variant="outline"
@@ -341,7 +343,7 @@ function AdminDashboard() {
               onClick={() => navigate('/dashboard/orders')}
             >
               <Eye className="mr-2 h-4 w-4" />
-              <span className="text-xs sm:text-sm">Buyurtmalarni ko'rish</span>
+              <span className="text-xs sm:text-sm">{t('viewOrders')}</span>
             </Button>
             <Button
               variant="outline"
@@ -349,7 +351,7 @@ function AdminDashboard() {
               onClick={() => navigate('/dashboard/finance')}
             >
               <DollarSign className="mr-2 h-4 w-4" />
-              <span className="text-xs sm:text-sm">Payout so'rov</span>
+              <span className="text-xs sm:text-sm">{t('payoutRequest')}</span>
             </Button>
           </CardContent>
         </Card>
@@ -360,16 +362,16 @@ function AdminDashboard() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="text-base sm:text-lg">Buyurtma va daromad</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t('ordersAndRevenue')}</CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                Haftalik/oylik statistika
+                {t('weeklyMonthlyStats')}
               </CardDescription>
             </div>
             <Tabs value={chartPeriod} onValueChange={setChartPeriod} className="w-full sm:w-auto">
               <TabsList className="grid w-full sm:w-auto grid-cols-3">
-                <TabsTrigger value="7" className="text-xs sm:text-sm">7 kun</TabsTrigger>
-                <TabsTrigger value="30" className="text-xs sm:text-sm">30 kun</TabsTrigger>
-                <TabsTrigger value="90" className="text-xs sm:text-sm">90 kun</TabsTrigger>
+                <TabsTrigger value="7" className="text-xs sm:text-sm">{t('days7')}</TabsTrigger>
+                <TabsTrigger value="30" className="text-xs sm:text-sm">{t('days30')}</TabsTrigger>
+                <TabsTrigger value="90" className="text-xs sm:text-sm">{t('days90')}</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -387,13 +389,13 @@ function AdminDashboard() {
               />
               <YAxis 
                 yAxisId="left"
-                label={{ value: 'Buyurtmalar', angle: -90, position: 'insideLeft' }}
+                label={{ value: t('orders'), angle: -90, position: 'insideLeft' }}
                 tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               />
               <YAxis 
                 yAxisId="right"
                 orientation="right"
-                label={{ value: 'Daromad', angle: 90, position: 'insideRight' }}
+                label={{ value: t('revenue'), angle: 90, position: 'insideRight' }}
                 tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                 tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
               />
@@ -404,7 +406,7 @@ function AdminDashboard() {
               <Bar
                 yAxisId="left"
                 dataKey="orders"
-                name="Buyurtmalar"
+                name={t('orders')}
                 fill="hsl(var(--primary))"
                 radius={[4, 4, 0, 0]}
               />
@@ -412,7 +414,7 @@ function AdminDashboard() {
                 yAxisId="right"
                 type="monotone"
                 dataKey="revenue"
-                name="Daromad"
+                name={t('revenue')}
                 stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
                 dot={{ r: 4, fill: 'hsl(var(--chart-2))' }}
