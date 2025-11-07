@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatNumber, formatDate } from '@/lib/utils';
+import { useDebounce } from '@/hooks/use-debounce';
 import {
   Empty,
   EmptyDescription,
@@ -334,12 +335,14 @@ const OrderTableRow = ({ order, isMobile, onView, onContact }) => {
 
 function Orders() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [fakeOrders] = useState(generateFakeOrders());
   const [viewMode, setViewMode] = useState('table'); // Default to table/list view
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentTypeFilter, setPaymentTypeFilter] = useState('all');
   const [deliveryTypeFilter, setDeliveryTypeFilter] = useState('all');
@@ -356,12 +359,12 @@ function Orders() {
     let filtered = [...fakeOrders];
 
     // Search filter
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(
         (order) =>
-          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.phone.includes(searchTerm) ||
-          order.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+          order.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+          order.phone.includes(debouncedSearchTerm) ||
+          order.clientName.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
 
@@ -422,7 +425,7 @@ function Orders() {
     return filtered;
   }, [
     fakeOrders,
-    searchTerm,
+    debouncedSearchTerm,
     statusFilter,
     paymentTypeFilter,
     deliveryTypeFilter,
@@ -439,11 +442,73 @@ function Orders() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, paymentTypeFilter, deliveryTypeFilter, periodFilter, sortBy]);
+  }, [debouncedSearchTerm, statusFilter, paymentTypeFilter, deliveryTypeFilter, periodFilter, sortBy]);
+
+  // Read filters and pagination from URL on mount
+  useEffect(() => {
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const payment = searchParams.get('payment');
+    const delivery = searchParams.get('delivery');
+    const period = searchParams.get('period');
+    const sort = searchParams.get('sort');
+    const page = searchParams.get('page');
+    const limit = searchParams.get('limit');
+    
+    if (search !== null) setSearchTerm(search);
+    if (status !== null) setStatusFilter(status);
+    if (payment !== null) setPaymentTypeFilter(payment);
+    if (delivery !== null) setDeliveryTypeFilter(delivery);
+    if (period !== null) setPeriodFilter(period);
+    if (sort !== null) setSortBy(sort);
+    if (page !== null) {
+      const pageNum = parseInt(page, 10);
+      if (pageNum >= 1) setCurrentPage(pageNum);
+    }
+    if (limit !== null) {
+      const limitNum = parseInt(limit, 10);
+      if ([10, 20, 30, 40, 50].includes(limitNum)) setItemsPerPage(limitNum);
+    }
+  }, []); // Only on mount
+
+  // Update URL when filters change (using debounced search)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (paymentTypeFilter !== 'all') params.set('payment', paymentTypeFilter);
+    if (deliveryTypeFilter !== 'all') params.set('delivery', deliveryTypeFilter);
+    if (periodFilter !== 'all') params.set('period', periodFilter);
+    if (sortBy !== 'newest') params.set('sort', sortBy);
+    
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearchTerm, statusFilter, paymentTypeFilter, deliveryTypeFilter, periodFilter, sortBy]);
+
+  // Update URL when pagination changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
+    if (currentPage > 1) {
+      params.set('page', currentPage.toString());
+    } else {
+      params.delete('page');
+    }
+    
+    if (itemsPerPage !== 20) {
+      params.set('limit', itemsPerPage.toString());
+    } else {
+      params.delete('limit');
+    }
+    
+    setSearchParams(params, { replace: true });
+  }, [currentPage, itemsPerPage]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      // Scroll to top when page changes
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

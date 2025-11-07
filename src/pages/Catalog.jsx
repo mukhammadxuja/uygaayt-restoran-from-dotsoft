@@ -47,6 +47,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useDebounce } from '@/hooks/use-debounce';
 import CategoryForm from '@/components/dashboard/dialogs/CategoryForm';
 import AssignProductsToCategory from '@/components/dashboard/dialogs/AssignProductsToCategory';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -136,6 +137,7 @@ function Catalog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState(generateFakeCategories());
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -183,14 +185,14 @@ function Catalog() {
 
   // Filter categories
   const filteredTree = useMemo(() => {
-    if (!searchTerm) return categoryTree;
+    if (!debouncedSearchTerm) return categoryTree;
 
     const filterTree = (items) => {
       return items
         .filter((item) => {
           const matchesSearch =
-            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.slug.toLowerCase().includes(searchTerm.toLowerCase());
+            item.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            item.slug.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
           const hasMatchingChildren =
             item.children.length > 0 &&
             filterTree(item.children).length > 0;
@@ -203,7 +205,7 @@ function Catalog() {
     };
 
     return filterTree(categoryTree);
-  }, [categoryTree, searchTerm]);
+  }, [categoryTree, debouncedSearchTerm]);
 
   const toggleExpand = (categoryId) => {
     setExpandedCategories((prev) => {
@@ -255,14 +257,50 @@ function Catalog() {
     setEditingCategory(null);
   };
 
-  // Watch for URL parameter to open drawer
+  // Watch for URL parameter to open drawer and dialogs
   useEffect(() => {
     const drawer = searchParams.get('drawer');
+    const dialog = searchParams.get('dialog');
+    const categoryId = searchParams.get('categoryId');
+    
     if (drawer === 'create-catalog') {
       setEditingCategory(null);
       setCategoryFormOpen(true);
     }
-  }, [searchParams]);
+    
+    if (dialog === 'assign-products' && categoryId) {
+      const category = categories.find(c => c.id === categoryId);
+      if (category) {
+        setCategoryToAssign(category);
+        setAssignProductsOpen(true);
+      }
+    } else if (dialog === 'delete-category' && categoryId) {
+      const category = categories.find(c => c.id === categoryId);
+      if (category) {
+        setCategoryToDelete(category);
+        setDeleteDialogOpen(true);
+      }
+    }
+  }, [searchParams, categories]);
+
+  // Read search from URL on mount
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search !== null) setSearchTerm(search);
+  }, []); // Only on mount
+
+  // Update URL when search changes (using debounced search)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
+    
+    // Preserve drawer parameter if exists
+    const drawer = searchParams.get('drawer');
+    if (drawer) params.set('drawer', drawer);
+    
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearchTerm]);
 
   const handleDelete = (category) => {
     setCategoryToDelete(category);
@@ -638,6 +676,17 @@ function Catalog() {
           if (!open) {
             setCategoryToAssign(null);
           }
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'assign-products');
+            if (categoryToAssign) {
+              params.set('categoryId', categoryToAssign.id);
+            }
+          } else {
+            params.delete('dialog');
+            params.delete('categoryId');
+          }
+          setSearchParams(params, { replace: true });
         }}
         category={categoryToAssign}
         allCategories={categories}
@@ -645,7 +694,23 @@ function Catalog() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <Dialog 
+        open={deleteDialogOpen} 
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'delete-category');
+            if (categoryToDelete) {
+              params.set('categoryId', categoryToDelete.id);
+            }
+          } else {
+            params.delete('dialog');
+            params.delete('categoryId');
+          }
+          setSearchParams(params, { replace: true });
+        }}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Kategoriyani o'chirish</DialogTitle>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -408,6 +408,7 @@ const StockHistoryList = ({ history }) => {
 function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -579,7 +580,13 @@ function ProductDetail() {
           </Card>
 
           {/* Product Information - Using Tabs for better organization */}
-          <Tabs defaultValue="info" className="w-full">
+          <Tabs 
+            value={searchParams.get('tab') || 'info'}
+            onValueChange={(value) => {
+              setSearchParams({ tab: value }, { replace: true });
+            }}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="info" className="text-xs sm:text-sm">
                 Ma'lumotlar

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -64,6 +65,8 @@ const SETTINGS_TABS = [
 function SettingsPage() {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'store';
 
   const [imageSrc, setImageSrc] = useState();
   const [imageSelected, setImageSelected] = useState(false);
@@ -81,7 +84,13 @@ function SettingsPage() {
       />
 
       {/* Settings Tabs */}
-      <Tabs defaultValue="store" className="w-full">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => {
+          setSearchParams({ tab: value }, { replace: true });
+        }}
+        className="w-full"
+      >
         {/* Mobile: Horizontal Tabs */}
         <div className="lg:hidden">
           <Card className="overflow-hidden">

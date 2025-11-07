@@ -61,6 +61,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatNumber } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useDebounce } from '@/hooks/use-debounce';
 import ProductForm from '@/components/dashboard/dialogs/ProductForm';
 import StockAdjustment from '@/components/dashboard/dialogs/StockAdjustment';
 import CSVImport from '@/components/dashboard/dialogs/CSVImport';
@@ -282,6 +283,7 @@ function Products() {
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
@@ -310,11 +312,11 @@ function Products() {
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...fakeProducts];
 
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(
         (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+          product.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
 
@@ -339,7 +341,7 @@ function Products() {
     }
 
     return filtered;
-  }, [fakeProducts, searchTerm, statusFilter, categoryFilter, sortBy]);
+  }, [fakeProducts, debouncedSearchTerm, statusFilter, categoryFilter, sortBy]);
 
   // Pagination calculations
   const totalPages = Math.ceil(
@@ -357,7 +359,7 @@ function Products() {
     setCurrentPage(1);
     setSelectedProducts([]);
     setSelectAll(false);
-  }, [searchTerm, statusFilter, categoryFilter, sortBy, itemsPerPage]);
+  }, [debouncedSearchTerm, statusFilter, categoryFilter, sortBy, itemsPerPage]);
 
   // Auto set view mode based on screen size
   useEffect(() => {
@@ -369,6 +371,8 @@ function Products() {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      // Scroll to top when page changes
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -557,14 +561,89 @@ function Products() {
     }
   }, []);
 
-  // Watch for URL parameter to open drawer
+  // Watch for URL parameter to open drawer and dialogs
   useEffect(() => {
     const drawer = searchParams.get('drawer');
+    const dialog = searchParams.get('dialog');
+    const productId = searchParams.get('productId');
+    
     if (drawer === 'create-product') {
       setEditingProduct(null);
       setProductFormOpen(true);
     }
+    
+    if (dialog === 'update-price') {
+      setUpdatePriceDialogOpen(true);
+    } else if (dialog === 'csv-import') {
+      setCsvImportOpen(true);
+    } else if (dialog === 'low-stock-settings') {
+      setLowStockSettingsOpen(true);
+    } else if (dialog === 'stock-adjustment' && productId) {
+      const product = fakeProducts.find(p => p.id === productId);
+      if (product) {
+        setAdjustingProduct(product);
+        setStockAdjustmentOpen(true);
+      }
+    }
   }, [searchParams]);
+
+  // Read filters and pagination from URL on mount
+  useEffect(() => {
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const category = searchParams.get('category');
+    const sort = searchParams.get('sort');
+    const page = searchParams.get('page');
+    const limit = searchParams.get('limit');
+    
+    if (search !== null) setSearchTerm(search);
+    if (status !== null) setStatusFilter(status);
+    if (category !== null) setCategoryFilter(category);
+    if (sort !== null) setSortBy(sort);
+    if (page !== null) {
+      const pageNum = parseInt(page, 10);
+      if (pageNum >= 1) setCurrentPage(pageNum);
+    }
+    if (limit !== null) {
+      const limitNum = parseInt(limit, 10);
+      if ([10, 20, 30, 40, 50].includes(limitNum)) setItemsPerPage(limitNum);
+    }
+  }, []); // Only on mount
+
+  // Update URL when filters change (using debounced search)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (categoryFilter !== 'all') params.set('category', categoryFilter);
+    if (sortBy !== 'newest') params.set('sort', sortBy);
+    
+    // Preserve drawer parameter if exists
+    const drawer = searchParams.get('drawer');
+    if (drawer) params.set('drawer', drawer);
+    
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearchTerm, statusFilter, categoryFilter, sortBy]);
+
+  // Update URL when pagination changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
+    if (currentPage > 1) {
+      params.set('page', currentPage.toString());
+    } else {
+      params.delete('page');
+    }
+    
+    if (itemsPerPage !== 20) {
+      params.set('limit', itemsPerPage.toString());
+    } else {
+      params.delete('limit');
+    }
+    
+    setSearchParams(params, { replace: true });
+  }, [currentPage, itemsPerPage]);
 
   const handleDelete = (productId) => {
     if (window.confirm("Bu mahsulotni o'chirishni xohlaysizmi?")) {
@@ -1047,7 +1126,19 @@ function Products() {
       )}
 
       {/* Update Price Dialog */}
-      <Dialog open={updatePriceDialogOpen} onOpenChange={setUpdatePriceDialogOpen}>
+      <Dialog 
+        open={updatePriceDialogOpen} 
+        onOpenChange={(open) => {
+          setUpdatePriceDialogOpen(open);
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'update-price');
+          } else {
+            params.delete('dialog');
+          }
+          setSearchParams(params, { replace: true });
+        }}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Narxni foiz bo'yicha o'zgartirish</DialogTitle>
@@ -1111,6 +1202,17 @@ function Products() {
           if (!open) {
             setAdjustingProduct(null);
           }
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'stock-adjustment');
+            if (adjustingProduct) {
+              params.set('productId', adjustingProduct.id);
+            }
+          } else {
+            params.delete('dialog');
+            params.delete('productId');
+          }
+          setSearchParams(params, { replace: true });
         }}
         product={adjustingProduct}
         onAdjust={handleStockAdjustment}
@@ -1119,14 +1221,32 @@ function Products() {
       {/* CSV Import Dialog */}
       <CSVImport
         open={csvImportOpen}
-        onOpenChange={setCsvImportOpen}
+        onOpenChange={(open) => {
+          setCsvImportOpen(open);
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'csv-import');
+          } else {
+            params.delete('dialog');
+          }
+          setSearchParams(params, { replace: true });
+        }}
         onImport={handleCSVImport}
       />
 
       {/* Low Stock Settings Dialog */}
       <LowStockSettings
         open={lowStockSettingsOpen}
-        onOpenChange={setLowStockSettingsOpen}
+        onOpenChange={(open) => {
+          setLowStockSettingsOpen(open);
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'low-stock-settings');
+          } else {
+            params.delete('dialog');
+          }
+          setSearchParams(params, { replace: true });
+        }}
         threshold={lowStockThreshold}
         onSave={handleLowStockSettingsSave}
       />

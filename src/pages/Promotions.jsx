@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { useDebounce } from '@/hooks/use-debounce';
 import PromotionForm from '@/components/dashboard/dialogs/PromotionForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatDate } from '@/lib/utils';
@@ -468,6 +469,7 @@ function Promotions() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [promotions, setPromotions] = useState(generateFakePromotions());
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [promotionFormOpen, setPromotionFormOpen] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -475,13 +477,13 @@ function Promotions() {
 
   // Filter promotions
   const filteredPromotions = useMemo(() => {
-    if (!searchTerm) return promotions;
+    if (!debouncedSearchTerm) return promotions;
     return promotions.filter(
       (promo) =>
-        promo.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        promo.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        promo.code.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        promo.description?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
     );
-  }, [promotions, searchTerm]);
+  }, [promotions, debouncedSearchTerm]);
 
   const handleCreateNew = () => {
     setEditingPromotion(null);
@@ -551,14 +553,44 @@ function Promotions() {
     toast.success('Promo kod holati o\'zgartirildi');
   };
 
-  // Watch for URL parameter to open drawer
+  // Watch for URL parameter to open drawer and dialogs
   useEffect(() => {
     const drawer = searchParams.get('drawer');
+    const dialog = searchParams.get('dialog');
+    const promotionId = searchParams.get('promotionId');
+    
     if (drawer === 'create-promotion') {
       setEditingPromotion(null);
       setPromotionFormOpen(true);
     }
-  }, [searchParams]);
+    
+    if (dialog === 'delete-promotion' && promotionId) {
+      const promotion = promotions.find(p => p.id === promotionId);
+      if (promotion) {
+        setPromotionToDelete(promotion);
+        setDeleteDialogOpen(true);
+      }
+    }
+  }, [searchParams, promotions]);
+
+  // Read search from URL on mount
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search !== null) setSearchTerm(search);
+  }, []); // Only on mount
+
+  // Update URL when search changes (using debounced search)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
+    
+    // Preserve drawer parameter if exists
+    const drawer = searchParams.get('drawer');
+    if (drawer) params.set('drawer', drawer);
+    
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearchTerm]);
 
   return (
     <div className="space-y-4 py-2 sm:py-4">
@@ -677,7 +709,23 @@ function Promotions() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <Dialog 
+        open={deleteDialogOpen} 
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          const params = new URLSearchParams(searchParams);
+          if (open) {
+            params.set('dialog', 'delete-promotion');
+            if (promotionToDelete) {
+              params.set('promotionId', promotionToDelete.id);
+            }
+          } else {
+            params.delete('dialog');
+            params.delete('promotionId');
+          }
+          setSearchParams(params, { replace: true });
+        }}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Promo kodni o'chirish</DialogTitle>

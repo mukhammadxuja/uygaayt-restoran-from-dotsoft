@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +52,8 @@ import { toast } from 'sonner';
 export default function ClientDetails() {
   const { clientId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'orders';
   const { clients, orders, getClientOrders, addClient, userUid } =
     useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
@@ -237,7 +239,12 @@ export default function ClientDetails() {
 
       <Separator />
 
-      <Tabs defaultValue="orders">
+      <Tabs 
+        value={activeTab}
+        onValueChange={(value) => {
+          setSearchParams({ tab: value }, { replace: true });
+        }}
+      >
         <TabsList>
           <TabsTrigger value="orders">Buyurtmalar ro'yxati</TabsTrigger>
           <TabsTrigger value="links">Havolalar ro'yxati</TabsTrigger>

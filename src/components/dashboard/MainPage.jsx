@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Package,
   CreditCard,
@@ -88,9 +88,10 @@ const generateChartData = (days) => {
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
-  const [chartPeriod, setChartPeriod] = useState('7');
+  const [chartPeriod, setChartPeriod] = useState(searchParams.get('period') || '7');
 
   // Mock orders data
   const allOrders = useMemo(() => generateFakeOrders(), []);
@@ -125,6 +126,13 @@ function AdminDashboard() {
 
   const chartData = useMemo(() => {
     return generateChartData(Number(chartPeriod));
+  }, [chartPeriod]);
+
+  // Update URL when chart period changes
+  useEffect(() => {
+    if (chartPeriod) {
+      setSearchParams({ period: chartPeriod }, { replace: true });
+    }
   }, [chartPeriod]);
 
   const getStatusBadge = (status) => {
