@@ -316,7 +316,7 @@ const StockInfoCard = ({ product, lowStockThreshold, onAdjust }) => {
           </div>
         )}
         <Button variant="outline" className="w-full" onClick={onAdjust}>
-          <Package className="h-4 w-4 mr-2" />
+          <Package className="h-4 w-4" />
           <span className="text-xs sm:text-sm">Ombordagi miqdorni o'zgartirish</span>
         </Button>
       </CardContent>
@@ -519,17 +519,17 @@ function ProductDetail() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                <MoreVertical className="h-4 w-4 mr-2" />
+                <MoreVertical className="h-4 w-4" />
                 Amallar
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={handleStockAdjust}>
-                <Package className="h-4 w-4 mr-2" />
+                <Package className="h-4 w-4" />
                 Ombordagi miqdor
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-4 w-4" />
                 Tahrirlash
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -537,7 +537,7 @@ function ProductDetail() {
                 onClick={() => setDeleteDialogOpen(true)}
                 className="text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="h-4 w-4" />
                 O'chirish
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -545,11 +545,11 @@ function ProductDetail() {
         ) : (
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button variant="outline" size="sm" onClick={handleStockAdjust}>
-              <Package className="h-4 w-4 mr-2" />
+              <Package className="h-4 w-4" />
               Ombordagi miqdor
             </Button>
             <Button variant="outline" size="sm" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className="h-4 w-4" />
               Tahrirlash
             </Button>
             <Button
@@ -557,7 +557,7 @@ function ProductDetail() {
               size="sm"
               onClick={() => setDeleteDialogOpen(true)}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-4 w-4" />
               O'chirish
             </Button>
           </div>
@@ -876,7 +876,7 @@ function ProductDetail() {
               onClick={handleDelete}
               className="w-full sm:w-auto"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-4 w-4" />
               O'chirish
             </Button>
           </DialogFooter>

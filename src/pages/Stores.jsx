@@ -192,7 +192,7 @@ function Stores() {
             </EmptyHeader>
             <EmptyContent>
               <Button onClick={handleCreateNew} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 Do'kon qo'shish
               </Button>
             </EmptyContent>

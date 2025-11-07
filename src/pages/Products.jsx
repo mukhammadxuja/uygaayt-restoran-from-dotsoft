@@ -248,12 +248,12 @@ const ProductCard = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="h-4 w-4" />
                   Tahrirlash
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4" />
                   O'chirish
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -575,7 +575,7 @@ function Products() {
                 size="sm"
                 onClick={() => setCsvImportOpen(true)}
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="h-4 w-4" />
                 CSV Import
               </Button>
               <Button
@@ -583,13 +583,13 @@ function Products() {
                 size="sm"
                 onClick={() => setLowStockSettingsOpen(true)}
               >
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="h-4 w-4" />
                 Sozlamalar
               </Button>
             </>
           )}
           <Button onClick={handleCreateNew} size="sm" className="flex-1 sm:flex-initial">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             <span className="text-xs sm:text-sm">Yangi mahsulot</span>
           </Button>
           {isMobile && (
@@ -601,11 +601,11 @@ function Products() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setCsvImportOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload className="h-4 w-4" />
                   CSV Import
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLowStockSettingsOpen(true)}>
-                  <Settings className="h-4 w-4 mr-2" />
+                  <Settings className="h-4 w-4" />
                   Sozlamalar
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -670,7 +670,7 @@ function Products() {
               onClick={() => setFiltersOpen(!filtersOpen)}
               className="w-full sm:w-auto"
             >
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className="h-4 w-4" />
               Filtrlar
             </Button>
           ) : null}

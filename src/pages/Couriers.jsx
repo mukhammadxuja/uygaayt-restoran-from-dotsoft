@@ -207,7 +207,7 @@ function Couriers() {
             </EmptyHeader>
             <EmptyContent>
               <Button onClick={handleCreateNew} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 Kuryer qo'shish
               </Button>
             </EmptyContent>

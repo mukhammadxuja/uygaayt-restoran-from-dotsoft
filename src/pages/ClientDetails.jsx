@@ -166,7 +166,7 @@ export default function ClientDetails() {
             Bu mijoz mavjud emas yoki o'chirilgan
           </p>
           <Button onClick={() => navigate('/dashboard/clients')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Mijozlar ro'yxatiga qaytish
           </Button>
         </div>
@@ -419,9 +419,8 @@ export default function ClientDetails() {
               </div>
               <div className="inline-flex -space-x-px rounded-md shadow-xs rtl:space-x-reverse">
                 <Button
-                  className={`rounded-none shadow-none first:rounded-s-md last:rounded-e-md hover:bg-white focus-visible:z-10 ${
-                    linksViewMode === 'grid' ? '' : 'bg-muted text-primary'
-                  }`}
+                  className={`rounded-none shadow-none first:rounded-s-md last:rounded-e-md hover:bg-white focus-visible:z-10 ${linksViewMode === 'grid' ? '' : 'bg-muted text-primary'
+                    }`}
                   variant="outline"
                   size="icon"
                   aria-label="Grid View"
@@ -430,9 +429,8 @@ export default function ClientDetails() {
                   <LayoutGrid size={16} aria-hidden="true" />
                 </Button>
                 <Button
-                  className={`rounded-none shadow-none first:rounded-s-md last:rounded-e-md hover:bg-white focus-visible:z-10 ${
-                    linksViewMode === 'list' ? '' : 'bg-muted text-primary'
-                  }`}
+                  className={`rounded-none shadow-none first:rounded-s-md last:rounded-e-md hover:bg-white focus-visible:z-10 ${linksViewMode === 'list' ? '' : 'bg-muted text-primary'
+                    }`}
                   variant="outline"
                   size="icon"
                   aria-label="List View"

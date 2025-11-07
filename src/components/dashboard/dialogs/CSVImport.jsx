@@ -68,7 +68,7 @@ function CSVImport({ open, onOpenChange, onImport }) {
       try {
         const text = e.target.result;
         const lines = text.split('\n').filter((line) => line.trim());
-        
+
         if (lines.length < 2) {
           toast.error('CSV fayl bo\'sh yoki noto\'g\'ri formatda');
           return;
@@ -76,12 +76,12 @@ function CSVImport({ open, onOpenChange, onImport }) {
 
         // Parse header
         const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-        
+
         // Validate headers (case-insensitive)
         const missingHeaders = CSV_TEMPLATE_HEADERS.filter(
           (h) => !headers.includes(h.toLowerCase())
         );
-        
+
         if (missingHeaders.length > 0) {
           toast.error(`Quyidagi ustunlar topilmadi: ${missingHeaders.join(', ')}`);
           return;
@@ -203,7 +203,7 @@ function CSVImport({ open, onOpenChange, onImport }) {
       await onImport(products);
       setSuccessCount(products.length);
       toast.success(`${products.length} ta mahsulot muvaffaqiyatli import qilindi`);
-      
+
       // Reset
       setFile(null);
       setPreviewData([]);
@@ -245,7 +245,7 @@ function CSVImport({ open, onOpenChange, onImport }) {
               </p>
             </div>
             <Button variant="outline" onClick={downloadTemplate} size="sm">
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4" />
               Shablon yuklab olish
             </Button>
           </div>
@@ -255,11 +255,10 @@ function CSVImport({ open, onOpenChange, onImport }) {
             <Label>CSV fayl yuklash</Label>
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors mt-2 ${
-                isDragActive
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors mt-2 ${isDragActive
                   ? 'border-primary bg-primary/5'
                   : 'border-muted-foreground/25 hover:border-primary/50'
-              }`}
+                }`}
             >
               <input {...getInputProps()} />
               {file ? (
@@ -348,11 +347,10 @@ function CSVImport({ open, onOpenChange, onImport }) {
                         <TableCell>{row.stockqty || '-'}</TableCell>
                         <TableCell>
                           <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              row.availabilitystatus === 'active'
+                            className={`px-2 py-1 rounded text-xs ${row.availabilitystatus === 'active'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
-                            }`}
+                              }`}
                           >
                             {row.availabilitystatus || 'active'}
                           </span>

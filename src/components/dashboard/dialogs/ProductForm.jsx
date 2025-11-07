@@ -585,11 +585,10 @@ function ProductForm({ open, onOpenChange, product = null, onSave }) {
                         <div className="space-y-4">
                           <div
                             {...getRootProps()}
-                            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                              isDragActive
+                            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive
                                 ? 'border-primary bg-primary/5'
                                 : 'border-muted-foreground/25 hover:border-primary/50'
-                            }`}
+                              }`}
                           >
                             <input {...getInputProps()} />
                             {uploadingImages ? (
@@ -657,7 +656,7 @@ function ProductForm({ open, onOpenChange, product = null, onSave }) {
                     </p>
                   </div>
                   <Button type="button" onClick={addVariant} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4" />
                     Variant qo'shish
                   </Button>
                 </div>
@@ -938,7 +937,7 @@ function ProductForm({ open, onOpenChange, product = null, onSave }) {
                   size="sm"
                   onClick={() => setShowPreview(!showPreview)}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
+                  <Eye className="h-4 w-4" />
                   {showPreview ? 'Yashirish' : 'Ko\'rsatish'}
                 </Button>
               </div>
@@ -1088,19 +1087,18 @@ function ProductPreviewCard({ formValues }) {
 
         <div className="pt-2 border-t">
           <span
-            className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-              formValues.availabilityStatus === 'active'
+            className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${formValues.availabilityStatus === 'active'
                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                 : formValues.availabilityStatus === 'hidden'
-                ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-            }`}
+                  ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+              }`}
           >
             {formValues.availabilityStatus === 'active'
               ? 'Faol'
               : formValues.availabilityStatus === 'hidden'
-              ? 'Yashirilgan'
-              : 'Tugagan'}
+                ? 'Yashirilgan'
+                : 'Tugagan'}
           </span>
         </div>
       </CardContent>

@@ -450,11 +450,11 @@ function Catalog() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleAssignProducts(category)}>
-                      <Package className="h-4 w-4 mr-2" />
+                      <Package className="h-4 w-4" />
                       Mahsulotlarni biriktirish
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleEdit(category)}>
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="h-4 w-4" />
                       Tahrirlash
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -462,7 +462,7 @@ function Catalog() {
                       onClick={() => handleDelete(category)}
                       className="text-destructive"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-4 w-4" />
                       O'chirish
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -513,7 +513,7 @@ function Catalog() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
+    <div className="space-y-4 py-2 sm:py-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
@@ -522,8 +522,8 @@ function Catalog() {
             Kategoriyalar va subkategoriyalarni boshqaring
           </p>
         </div>
-        <Button onClick={handleCreateNew} size="sm" className="flex-1 sm:flex-initial">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={handleCreateNew} size="sm" className="">
+          <Plus className="h-4 w-4" />
           <span className="text-xs sm:text-sm">Yangi kategoriya</span>
         </Button>
       </div>
@@ -542,9 +542,9 @@ function Catalog() {
 
       {/* Categories Table */}
       <Card>
-        <CardHeader className="pb-3">
+        {/* <CardHeader className="pb-3">
           <CardTitle className="text-base sm:text-lg">Kategoriyalar ro'yxati</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="p-0">
           {filteredTree.length > 0 ? (
             <div className="overflow-x-auto">
@@ -647,7 +647,7 @@ function Catalog() {
               onClick={confirmDelete}
               className="w-full sm:w-auto"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-4 w-4" />
               O'chirish
             </Button>
           </DialogFooter>

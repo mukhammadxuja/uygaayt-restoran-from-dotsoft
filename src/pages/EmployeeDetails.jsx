@@ -76,7 +76,7 @@ export default function EmployeeDetails() {
             Bu xodim mavjud emas yoki o'chirilgan
           </p>
           <Button onClick={() => navigate('/dashboard/employees')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Xodimlar ro'yxatiga qaytish
           </Button>
         </div>
@@ -94,11 +94,11 @@ export default function EmployeeDetails() {
             className={cn(
               'text-xs font-medium border-none dark:text-white',
               employee.position === 'editor' &&
-                'bg-blue-100 hover:bg-blue-200/80 text-blue-500 dark:bg-blue-500',
+              'bg-blue-100 hover:bg-blue-200/80 text-blue-500 dark:bg-blue-500',
               employee.position === 'photographer' &&
-                'bg-green-100 hover:bg-green-200/80 text-green-500 dark:bg-green-500',
+              'bg-green-100 hover:bg-green-200/80 text-green-500 dark:bg-green-500',
               employee.position === 'video_operator' &&
-                'bg-amber-100 hover:bg-amber-200/80 text-amber-500 dark:bg-amber-500'
+              'bg-amber-100 hover:bg-amber-200/80 text-amber-500 dark:bg-amber-500'
             )}
           >
             {getPositionLabel(employee.position)}
