@@ -25,6 +25,7 @@ import {
   Check,
   X,
   RefreshCw,
+  Tag,
 } from 'lucide-react';
 import {
   Dialog,
@@ -59,6 +60,14 @@ const generateFakeOrder = (orderId) => {
     { status: 'preparing', timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), note: 'Tayyorlanmoqda' },
   ];
 
+  // Random promo code (sometimes applied)
+  const appliedPromo = Math.random() > 0.5 ? {
+    code: 'WELCOME10',
+    type: 'percentage',
+    discountValue: 10,
+    discountAmount: 13500,
+  } : null;
+
   return {
     id: orderId || 'ORD-000001',
     clientName: 'Ali Valiyev',
@@ -74,6 +83,7 @@ const generateFakeOrder = (orderId) => {
     internalNote: 'Mijoz maxsus talab qilgan',
     customerNote: 'Iltimos, tezroq yetkazib bering',
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    appliedPromo: appliedPromo,
   };
 };
 
@@ -196,7 +206,9 @@ function OrderDetail() {
     return statuses.indexOf(status);
   };
 
-  const totalAmount = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discountAmount = order.appliedPromo?.discountAmount || 0;
+  const totalAmount = subtotal - discountAmount;
 
   return (
     <div className="space-y-4 my-2">
@@ -299,6 +311,22 @@ function OrderDetail() {
                   </div>
                 ))}
                 <Separator />
+                {order.appliedPromo && (
+                  <>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-primary" />
+                        <span className="text-muted-foreground">
+                          Promo kod ({order.appliedPromo.code})
+                        </span>
+                      </div>
+                      <span className="text-primary font-medium">
+                        -{formatNumber(discountAmount)} so'm
+                      </span>
+                    </div>
+                    <Separator />
+                  </>
+                )}
                 <div className="flex items-center justify-between font-bold text-lg">
                   <span>Jami:</span>
                   <span>{formatNumber(totalAmount)} so'm</span>
