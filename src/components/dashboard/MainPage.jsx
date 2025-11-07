@@ -332,7 +332,7 @@ function AdminDashboard() {
           <CardContent className="space-y-2">
             <Button
               className="w-full justify-start"
-              onClick={() => navigate('/dashboard/products')}
+              onClick={() => navigate('/dashboard/products?drawer=create-product')}
             >
               <Plus className="mr-2 h-4 w-4" />
               <span className="text-xs sm:text-sm">{t('addProduct')}</span>

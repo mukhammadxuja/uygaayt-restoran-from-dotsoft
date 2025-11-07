@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -464,6 +465,7 @@ const PromotionTableRow = ({
 
 function Promotions() {
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [promotions, setPromotions] = useState(generateFakePromotions());
   const [searchTerm, setSearchTerm] = useState('');
   const [promotionFormOpen, setPromotionFormOpen] = useState(false);
@@ -483,6 +485,7 @@ function Promotions() {
 
   const handleCreateNew = () => {
     setEditingPromotion(null);
+    setSearchParams({ drawer: 'create-promotion' });
     setPromotionFormOpen(true);
   };
 
@@ -547,6 +550,15 @@ function Promotions() {
     );
     toast.success('Promo kod holati o\'zgartirildi');
   };
+
+  // Watch for URL parameter to open drawer
+  useEffect(() => {
+    const drawer = searchParams.get('drawer');
+    if (drawer === 'create-promotion') {
+      setEditingPromotion(null);
+      setPromotionFormOpen(true);
+    }
+  }, [searchParams]);
 
   return (
     <div className="space-y-4 py-2 sm:py-4">
@@ -654,6 +666,10 @@ function Promotions() {
           setPromotionFormOpen(open);
           if (!open) {
             setEditingPromotion(null);
+            // Remove drawer parameter from URL when closing
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('drawer');
+            setSearchParams(newParams, { replace: true });
           }
         }}
         promotion={editingPromotion}

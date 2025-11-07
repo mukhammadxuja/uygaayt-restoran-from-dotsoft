@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -275,6 +275,7 @@ const ProductCard = ({
 
 function Products() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const [fakeProducts] = useState(generateFakeProducts());
   const [viewMode, setViewMode] = useState('table');
@@ -500,6 +501,7 @@ function Products() {
 
   const handleCreateNew = () => {
     setEditingProduct(null);
+    setSearchParams({ drawer: 'create-product' });
     setProductFormOpen(true);
   };
 
@@ -554,6 +556,15 @@ function Products() {
       setLowStockThreshold(parseInt(savedThreshold));
     }
   }, []);
+
+  // Watch for URL parameter to open drawer
+  useEffect(() => {
+    const drawer = searchParams.get('drawer');
+    if (drawer === 'create-product') {
+      setEditingProduct(null);
+      setProductFormOpen(true);
+    }
+  }, [searchParams]);
 
   const handleDelete = (productId) => {
     if (window.confirm("Bu mahsulotni o'chirishni xohlaysizmi?")) {
@@ -1082,6 +1093,10 @@ function Products() {
           setProductFormOpen(open);
           if (!open) {
             setEditingProduct(null);
+            // Remove drawer parameter from URL when closing
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('drawer');
+            setSearchParams(newParams, { replace: true });
           }
         }}
         product={editingProduct}

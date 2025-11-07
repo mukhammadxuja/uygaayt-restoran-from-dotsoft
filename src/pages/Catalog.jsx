@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -132,6 +133,7 @@ const generateFakeCategories = () => {
 
 function Catalog() {
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState(generateFakeCategories());
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState(new Set());
@@ -217,6 +219,7 @@ function Catalog() {
 
   const handleCreateNew = () => {
     setEditingCategory(null);
+    setSearchParams({ drawer: 'create-catalog' });
     setCategoryFormOpen(true);
   };
 
@@ -251,6 +254,15 @@ function Catalog() {
     setCategoryFormOpen(false);
     setEditingCategory(null);
   };
+
+  // Watch for URL parameter to open drawer
+  useEffect(() => {
+    const drawer = searchParams.get('drawer');
+    if (drawer === 'create-catalog') {
+      setEditingCategory(null);
+      setCategoryFormOpen(true);
+    }
+  }, [searchParams]);
 
   const handleDelete = (category) => {
     setCategoryToDelete(category);
@@ -607,6 +619,10 @@ function Catalog() {
           setCategoryFormOpen(open);
           if (!open) {
             setEditingCategory(null);
+            // Remove drawer parameter from URL when closing
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('drawer');
+            setSearchParams(newParams, { replace: true });
           }
         }}
         category={editingCategory}
