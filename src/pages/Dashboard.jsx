@@ -12,13 +12,8 @@ import {
 } from 'react-router-dom';
 import Orders from './Orders';
 import OrderDetail from './OrderDetail';
-import Stores from './Stores';
 import Products from './Products';
 import ProductDetail from './ProductDetail';
-import Couriers from './Couriers';
-import Users from './Users';
-import Marketing from './Marketing';
-import Analytics from './Analytics';
 import Catalog from './Catalog';
 import Finance from './Finance';
 import Promotions from './Promotions';

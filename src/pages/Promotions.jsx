@@ -12,11 +12,10 @@ import {
   CheckCircle2,
   XCircle,
   Calendar,
-  Users,
   TrendingUp,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -96,6 +95,365 @@ const generateFakePromotions = () => {
   ];
 };
 
+// Status Badge Component
+const StatusBadge = ({ promotion }) => {
+  const now = new Date();
+  const isExpired = promotion.validUntil < now;
+  const isLimitReached =
+    promotion.usageLimitTotal &&
+    promotion.usageCount >= promotion.usageLimitTotal;
+
+  if (!promotion.isActive) {
+    return (
+      <Badge variant="secondary" className="text-xs">
+        <XCircle className="h-3 w-3 mr-1" />
+        Yopilgan
+      </Badge>
+    );
+  }
+
+  if (isExpired) {
+    return (
+      <Badge variant="destructive" className="text-xs">
+        <XCircle className="h-3 w-3 mr-1" />
+        Muddati o'tgan
+      </Badge>
+    );
+  }
+
+  if (isLimitReached) {
+    return (
+      <Badge variant="destructive" className="text-xs">
+        <XCircle className="h-3 w-3 mr-1" />
+        Cheklovga yetgan
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge variant="default" className="text-xs">
+      <CheckCircle2 className="h-3 w-3 mr-1" />
+      Faol
+    </Badge>
+  );
+};
+
+// Promotion Row Component (Mobile Card View)
+const PromotionCard = ({ promotion, onEdit, onDelete, onToggleActive, onCopyCode }) => {
+  const formatDiscount = (promo) => {
+    if (promo.type === 'percentage') {
+      return `${promo.discountValue}%`;
+    }
+    return `${promo.discountValue.toLocaleString()} so'm`;
+  };
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4 space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono font-semibold text-sm sm:text-base">
+                {promotion.code}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 flex-shrink-0"
+                onClick={() => onCopyCode(promotion.code)}
+                title="Nusxalash"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+            {promotion.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {promotion.description}
+              </p>
+            )}
+          </div>
+          <StatusBadge promotion={promotion} />
+        </div>
+
+        {/* Discount Info */}
+        <div className="flex items-center justify-between py-2 border-t">
+          <div>
+            <p className="text-xs text-muted-foreground">Chegirma</p>
+            <p className="font-semibold text-primary text-sm">
+              {formatDiscount(promotion)}
+            </p>
+          </div>
+          {promotion.minOrderValue && (
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Minimal buyurtma</p>
+              <p className="text-xs font-medium">
+                {promotion.minOrderValue.toLocaleString()} so'm
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Conditions */}
+        <div className="space-y-1 text-xs">
+          {promotion.firstOrderOnly && (
+            <Badge variant="outline" className="text-xs">
+              Birinchi buyurtma
+            </Badge>
+          )}
+          {promotion.usageLimitPerUser && (
+            <p className="text-muted-foreground">
+              {promotion.usageLimitPerUser} marta/foydalanuvchi
+            </p>
+          )}
+        </div>
+
+        {/* Dates */}
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(promotion.validFrom)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span>→</span>
+            <span>{formatDate(promotion.validUntil)}</span>
+          </div>
+        </div>
+
+        {/* Usage Stats */}
+        <div className="flex items-center justify-between py-2 border-t">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Ishlatilgan:</span>
+            <span className="text-sm font-medium">
+              {promotion.usageCount || 0}
+            </span>
+            {promotion.usageLimitTotal && (
+              <span className="text-xs text-muted-foreground">
+                / {promotion.usageLimitTotal}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onToggleActive(promotion.id)}
+            className="flex-1 text-xs"
+          >
+            {promotion.isActive ? (
+              <>
+                <XCircle className="h-3 w-3 mr-1" />
+                Yopish
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Faollashtirish
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(promotion)}
+            className="flex-1 text-xs"
+          >
+            <Edit className="h-3 w-3 mr-1" />
+            Tahrirlash
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(promotion)}
+            className="text-destructive text-xs"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Promotion Table Row Component
+const PromotionTableRow = ({
+  promotion,
+  isMobile,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  onCopyCode,
+}) => {
+  const formatDiscount = (promo) => {
+    if (promo.type === 'percentage') {
+      return `${promo.discountValue}%`;
+    }
+    return `${promo.discountValue.toLocaleString()} so'm`;
+  };
+
+  return (
+    <TableRow className="hover:bg-muted/50">
+      <TableCell className="max-w-[200px]">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-mono font-semibold text-sm sm:text-base truncate">
+                {promotion.code}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 flex-shrink-0"
+                onClick={() => onCopyCode(promotion.code)}
+                title="Nusxalash"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+            {promotion.description && (
+              <p className="text-xs text-muted-foreground truncate mt-1 max-w-full">
+                {promotion.description}
+              </p>
+            )}
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell max-w-[150px]">
+        <div className="space-y-1">
+          <span className="font-semibold text-primary text-sm">
+            {formatDiscount(promotion)}
+          </span>
+          {promotion.minOrderValue && (
+            <p className="text-xs text-muted-foreground truncate">
+              Min: {promotion.minOrderValue.toLocaleString()} so'm
+            </p>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell max-w-[180px]">
+        <div className="space-y-1 text-xs">
+          {promotion.firstOrderOnly && (
+            <Badge variant="outline" className="text-xs">
+              Birinchi buyurtma
+            </Badge>
+          )}
+          {promotion.usageLimitPerUser && (
+            <p className="text-muted-foreground truncate">
+              {promotion.usageLimitPerUser} marta/foydalanuvchi
+            </p>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="hidden lg:table-cell max-w-[200px]">
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-1 text-muted-foreground truncate">
+            <Calendar className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{formatDate(promotion.validFrom)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-muted-foreground truncate">
+            <span className="flex-shrink-0">→</span>
+            <span className="truncate">{formatDate(promotion.validUntil)}</span>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell text-center max-w-[120px]">
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-1">
+            <TrendingUp className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm font-medium">
+              {promotion.usageCount || 0}
+            </span>
+          </div>
+          {promotion.usageLimitTotal && (
+            <span className="text-xs text-muted-foreground">
+              / {promotion.usageLimitTotal}
+            </span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="text-right max-w-[120px]">
+        <div className="flex justify-end">
+          <StatusBadge promotion={promotion} />
+        </div>
+      </TableCell>
+      <TableCell className="text-right max-w-[140px]">
+        {isMobile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
+                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onToggleActive(promotion.id)}>
+                {promotion.isActive ? (
+                  <>
+                    <XCircle className="h-4 w-4" />
+                    Yopish
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    Faollashtirish
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(promotion)}>
+                <Edit className="h-4 w-4" />
+                Tahrirlash
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(promotion)}
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                O'chirish
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              onClick={() => onToggleActive(promotion.id)}
+              title={promotion.isActive ? 'Yopish' : 'Faollashtirish'}
+            >
+              {promotion.isActive ? (
+                <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+              ) : (
+                <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              onClick={() => onEdit(promotion)}
+            >
+              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              onClick={() => onDelete(promotion)}
+            >
+              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+};
+
 function Promotions() {
   const isMobile = useIsMobile();
   const [promotions, setPromotions] = useState(generateFakePromotions());
@@ -130,7 +488,6 @@ function Promotions() {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (editingPromotion) {
-      // Update existing
       setPromotions((prev) =>
         prev.map((promo) =>
           promo.id === editingPromotion.id
@@ -140,7 +497,6 @@ function Promotions() {
       );
       toast.success('Promo kod yangilandi');
     } else {
-      // Create new
       const newPromotion = {
         id: `promo-${Date.now()}`,
         ...promotionData,
@@ -184,55 +540,6 @@ function Promotions() {
     toast.success('Promo kod holati o\'zgartirildi');
   };
 
-  const getStatusBadge = (promotion) => {
-    const now = new Date();
-    const isExpired = promotion.validUntil < now;
-    const isLimitReached =
-      promotion.usageLimitTotal &&
-      promotion.usageCount >= promotion.usageLimitTotal;
-
-    if (!promotion.isActive) {
-      return (
-        <Badge variant="secondary" className="text-xs">
-          <XCircle className="h-3 w-3 mr-1" />
-          Yopilgan
-        </Badge>
-      );
-    }
-
-    if (isExpired) {
-      return (
-        <Badge variant="destructive" className="text-xs">
-          <XCircle className="h-3 w-3 mr-1" />
-          Muddati o'tgan
-        </Badge>
-      );
-    }
-
-    if (isLimitReached) {
-      return (
-        <Badge variant="destructive" className="text-xs">
-          <XCircle className="h-3 w-3 mr-1" />
-          Cheklovga yetgan
-        </Badge>
-      );
-    }
-
-    return (
-      <Badge variant="default" className="text-xs">
-        <CheckCircle2 className="h-3 w-3 mr-1" />
-        Faol
-      </Badge>
-    );
-  };
-
-  const formatDiscount = (promotion) => {
-    if (promotion.type === 'percentage') {
-      return `${promotion.discountValue}%`;
-    }
-    return `${promotion.discountValue.toLocaleString()} so'm`;
-  };
-
   return (
     <div className="space-y-4 py-2 sm:py-4">
       {/* Header */}
@@ -243,7 +550,7 @@ function Promotions() {
             Promo kodlar va chegirmalarni boshqaring
           </p>
         </div>
-        <Button onClick={handleCreateNew} size="sm" className="h-10 sm:h-9">
+        <Button onClick={handleCreateNew} size="sm" className="h-10 sm:h-9 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           <span className="text-xs sm:text-sm">Yangi promo kod</span>
         </Button>
@@ -261,188 +568,61 @@ function Promotions() {
         />
       </div>
 
-      {/* Promotions Table */}
-      <Card>
-        <CardContent className="p-0">
-          {filteredPromotions.length > 0 ? (
-            <div className="overflow-x-auto">
+      {/* Promotions List */}
+      {filteredPromotions.length > 0 ? (
+        isMobile ? (
+          // Mobile Card View
+          <div className="space-y-3">
+            {filteredPromotions.map((promotion) => (
+              <PromotionCard
+                key={promotion.id}
+                promotion={promotion}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onToggleActive={handleToggleActive}
+                onCopyCode={handleCopyCode}
+              />
+            ))}
+          </div>
+        ) : (
+          // Desktop Table View
+          <Card>
+            <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Promo kod</TableHead>
-                    <TableHead className="hidden sm:table-cell">Chegirma</TableHead>
-                    <TableHead className="hidden md:table-cell">Shartlar</TableHead>
-                    <TableHead className="hidden lg:table-cell">Muddati</TableHead>
-                    <TableHead className="hidden md:table-cell text-center">
+                    <TableHead className="w-[200px] min-w-[180px]">Promo kod</TableHead>
+                    <TableHead className="hidden sm:table-cell w-[150px] min-w-[120px]">Chegirma</TableHead>
+                    <TableHead className="hidden md:table-cell w-[180px] min-w-[150px]">Shartlar</TableHead>
+                    <TableHead className="hidden lg:table-cell w-[200px] min-w-[180px]">Muddati</TableHead>
+                    <TableHead className="hidden md:table-cell text-center w-[120px] min-w-[100px]">
                       Ishlatilgan
                     </TableHead>
-                    <TableHead className="text-right">Holat</TableHead>
-                    <TableHead className="text-right">Amal</TableHead>
+                    <TableHead className="text-right w-[120px] min-w-[100px]">Holat</TableHead>
+                    <TableHead className="text-right w-[140px] min-w-[120px]">Amal</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredPromotions.map((promotion) => (
-                    <TableRow key={promotion.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-semibold text-sm sm:text-base">
-                                {promotion.code}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                onClick={() => handleCopyCode(promotion.code)}
-                                title="Nusxalash"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            {promotion.description && (
-                              <p className="text-xs text-muted-foreground truncate mt-1">
-                                {promotion.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <div className="space-y-1">
-                          <span className="font-semibold text-primary">
-                            {formatDiscount(promotion)}
-                          </span>
-                          {promotion.minOrderValue && (
-                            <p className="text-xs text-muted-foreground">
-                              Min: {promotion.minOrderValue.toLocaleString()} so'm
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div className="space-y-1 text-xs">
-                          {promotion.firstOrderOnly && (
-                            <Badge variant="outline" className="text-xs">
-                              Birinchi buyurtma
-                            </Badge>
-                          )}
-                          {promotion.usageLimitPerUser && (
-                            <p className="text-muted-foreground">
-                              {promotion.usageLimitPerUser} marta/foydalanuvchi
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            <span>{formatDate(promotion.validFrom)}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <span>→</span>
-                            <span>{formatDate(promotion.validUntil)}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm font-medium">
-                              {promotion.usageCount || 0}
-                            </span>
-                          </div>
-                          {promotion.usageLimitTotal && (
-                            <span className="text-xs text-muted-foreground">
-                              / {promotion.usageLimitTotal}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {getStatusBadge(promotion)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {isMobile ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleToggleActive(promotion.id)}
-                              >
-                                {promotion.isActive ? (
-                                  <>
-                                    <XCircle className="h-4 w-4" />
-                                    Yopish
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Faollashtirish
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEdit(promotion)}>
-                                <Edit className="h-4 w-4" />
-                                Tahrirlash
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(promotion)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                O'chirish
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : (
-                          <div className="flex items-center justify-end gap-1 sm:gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleToggleActive(promotion.id)}
-                              title={promotion.isActive ? 'Yopish' : 'Faollashtirish'}
-                            >
-                              {promotion.isActive ? (
-                                <XCircle className="h-4 w-4" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEdit(promotion)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleDelete(promotion)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                    <PromotionTableRow
+                      key={promotion.id}
+                      promotion={promotion}
+                      isMobile={isMobile}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onToggleActive={handleToggleActive}
+                      onCopyCode={handleCopyCode}
+                    />
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
+            </CardContent>
+          </Card>
+        )
+      ) : (
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center text-muted-foreground">
               <Tag className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-sm sm:text-base">
                 {searchTerm
@@ -450,9 +630,9 @@ function Promotions() {
                   : 'Hech qanday promo kod yo\'q'}
               </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Promotion Form */}
       <PromotionForm
