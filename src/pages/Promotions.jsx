@@ -568,7 +568,7 @@ function Promotions() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          type="text"
+          type="search"
           placeholder="Promo kod yoki tavsif bo'yicha qidirish..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
