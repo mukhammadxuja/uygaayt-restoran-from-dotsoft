@@ -313,7 +313,7 @@ const OrderTableRow = ({ order, isMobile, onView, onContact }) => {
               onClick={() => onView(order.id)}
               className="h-7 w-7 sm:h-8 sm:w-auto px-2 sm:px-3"
             >
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
               {/* <span className="hidden sm:inline text-xs sm:text-sm">Ko'rish</span> */}
             </Button>
             <Button
@@ -322,7 +322,7 @@ const OrderTableRow = ({ order, isMobile, onView, onContact }) => {
               onClick={() => onContact(order.phone)}
               className="h-7 w-7 sm:h-8 sm:w-auto px-2 sm:px-3"
             >
-              <Phone className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
               {/* <span className="hidden sm:inline text-xs sm:text-sm">Qo'ng'iroq</span> */}
             </Button>
           </div>
